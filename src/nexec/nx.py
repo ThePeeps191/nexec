@@ -27,6 +27,19 @@ def choose_gate(diagnostics: dict) -> str:
     return "affine" if frac[len(frac) // 2] > 0.5 else "raw"
 
 
+def load_model(model_id: str, *, device: str | None = None, dtype: torch.dtype = torch.bfloat16,
+               load_model_weights: bool = True):
+    """Load a HF causal LM and its tokenizer the way nexec expects (Gemma-2 needs eager attention)."""
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    tok = AutoTokenizer.from_pretrained(model_id)
+    if not load_model_weights:
+        return None, tok
+    attn = "eager" if "gemma" in model_id.lower() else "sdpa"
+    model = AutoModelForCausalLM.from_pretrained(model_id, dtype=dtype, attn_implementation=attn)
+    return model.to(device or default_device()).eval(), tok
+
+
 class NX:
     def __init__(self, model, tok, directions: Directions, *, strict: bool = True):
         directions.check_compatible(model, tok, strict=strict)
@@ -40,16 +53,10 @@ class NX:
     def from_pretrained(cls, model_id: str, *, directions: Directions | str | Path | None = None, model=None,
                         tokenizer=None, device: str | None = None, dtype: torch.dtype = torch.bfloat16,
                         fit_if_missing: bool = False, strict: bool = True) -> NX:
-        if tokenizer is None:
-            from transformers import AutoTokenizer
-
-            tokenizer = AutoTokenizer.from_pretrained(model_id)
-        if model is None:
-            from transformers import AutoModelForCausalLM
-
-            attn = "eager" if "gemma" in model_id.lower() else "sdpa"  # Gemma-2 soft-capping needs eager attention
-            model = AutoModelForCausalLM.from_pretrained(model_id, dtype=dtype, attn_implementation=attn)
-            model = model.to(device or default_device()).eval()
+        if model is None or tokenizer is None:
+            loaded_model, loaded_tok = load_model(model_id, device=device, dtype=dtype,
+                                                  load_model_weights=model is None)
+            model, tokenizer = model or loaded_model, tokenizer or loaded_tok
         if not isinstance(directions, Directions):
             path = resolve(model_id, directions)
             if path is not None:
