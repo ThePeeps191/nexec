@@ -13,6 +13,17 @@ verified from primary sources, where the brief is wrong or underspecified, and t
 
 ---
 
+## 0. Step 0 outcome (2026-10-25) — read with `docs/findings/2026-10-step0-spike.md`
+
+Checkpoint **passed**. The salary flip reproduces on Llama-3.2-3B at the faithful settings: user-turn fit, all layers, α = 1, raw gate. It is deterministic and direction-specific against magnitude-matched random. Changes to this spec that follow from it:
+
+- **§5.3 gate:** raw for Llama-3.2, **affine for Gemma-2**. Both were chosen by the §5.3 rule and validated against matched random.
+- **§5.4 layer grid:** the causally active layers on Llama are about L0–L11 of 28. Late layers alone (12–27) do nothing, even though the direction is most separable there. Layer sets must include early bands (0–8, 0–11, 5–11, all) and must be **selected by effect on the BIPIA train split, never by AUC**.
+- **§6.2 conditions:** add **magnitude-matched random direction** as a standard condition: record NX's per-(layer, token) coefficients, then replay them along random directions. Recomputing coefficients per layer over-doses the random edits by 4–8×.
+- **§6.2 utility:** a model's own clean answers can depend on prompt layout (Llama-3.2-3B refuses the clean salary table in 2 of 3 layouts). Always report NX utility relative to undefended on the same items.
+- **§5.2 fit context:** `user`, provisionally.
+- **Paraphrased injections:** NX roughly halves unseen-injection success on Llama with the 44-example pilot direction, but does not eliminate it. Re-measure after the full corpus.
+
 ## 1. What the source actually says (verified)
 
 Read directly from the NVIDIA page, including the formula images, which are not in its text:
