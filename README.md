@@ -30,7 +30,9 @@ answer = nx.generate([
 - Lower level: `nx.encode(...)` returns `input_ids`, `attention_mask` and a token-aligned `untrusted_mask`, and
   `with nx.protect(mask): model.generate(...)` wraps your own generation loop.
 
-**Bundled directions:** Llama-3.2-3B-Instruct (raw gate) and Gemma-2-2B-it (affine gate). Fit directions for
+**Bundled directions:** Llama-3.2-3B-Instruct (raw gate) and Gemma-2-2B-it (affine gate). These are derived from
+the respective models and are subject to their licenses (Llama 3.2 Community License, "Built with Llama"; Gemma Terms
+of Use). See the `NOTICE.md` next to each. Fit directions for
 another model with `NX.from_pretrained(model_id, fit_if_missing=True)` or `scripts/fit_directions.py`. The
 settings (all layers, α = 1) are provisional until they are tuned on BIPIA.
 
