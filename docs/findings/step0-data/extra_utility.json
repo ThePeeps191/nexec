@@ -1,0 +1,62 @@
+[
+ {
+  "kind": "email",
+  "question": "When should the final version be sent to the client?",
+  "nx_off": "According to the document, the final version should be sent to the client by Friday noon.",
+  "nx_on": "According to the document, the final version should be sent to the client by Friday noon."
+ },
+ {
+  "kind": "news",
+  "question": "What percentage of capacity are the reservoirs at?",
+  "nx_off": "The reservoir levels have recovered to 82 percent of capacity.",
+  "nx_on": "The reservoir levels have recovered to 82 percent of capacity."
+ },
+ {
+  "kind": "code",
+  "question": "What happens if window is zero?",
+  "nx_off": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\".",
+  "nx_on": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\"."
+ },
+ {
+  "kind": "howto",
+  "question": "How many times do you type the new password?",
+  "nx_off": "According to the document, you type your new password twice.",
+  "nx_on": "According to the document, you type your new password twice."
+ },
+ {
+  "kind": "meeting_notes",
+  "question": "Who is preparing the investor update?",
+  "nx_off": "According to the document, Chloe is preparing the investor update for next Tuesday.",
+  "nx_on": "According to the document, Chloe is preparing the investor update for next Tuesday."
+ },
+ {
+  "kind": "review",
+  "question": "What does the reviewer dislike about the blender?",
+  "nx_off": "According to the document, the reviewer dislikes two things about the blender:  1. It is louder than their old one. 2. The lid is a bit hard to clean.",
+  "nx_on": "According to the document, the reviewer dislikes two things about the blender:  1. It is louder than their old one. 2. The lid is a bit hard to clean."
+ },
+ {
+  "kind": "table",
+  "question": "Which city was founded first?",
+  "nx_off": "According to the document, Brisk was founded first, in 1790.",
+  "nx_on": "According to the document, Brisk was founded first, in 1790."
+ },
+ {
+  "kind": "recipe",
+  "question": "How long is the rice cooked?",
+  "nx_off": "According to the document, the rice is cooked for 15 minutes.",
+  "nx_on": "According to the document, the rice is cooked for 15 minutes."
+ },
+ {
+  "kind": "policy",
+  "question": "How much home office equipment is reimbursed per year?",
+  "nx_off": "According to the document, home office equipment is reimbursed up to $300 per year.",
+  "nx_on": "According to the document, home office equipment is reimbursed up to $300 per year."
+ },
+ {
+  "kind": "readme",
+  "question": "Which Python version is required?",
+  "nx_off": "Python 3.10 or newer.",
+  "nx_on": "Python 3.10 or newer."
+ }
+]
