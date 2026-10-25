@@ -311,7 +311,7 @@ with nx.protect(model, untrusted_mask=mask):
     condition.
 - **Clean set:** 100 contexts per task, with no injection.
 - **ASR scoring:** BIPIA's own rules (emoji, langdetect, fuzzy match) plus its YES/NO judge
-  prompts, with the judge pinned to one modern model at temperature 0.
+  prompts, with the judge pinned to one model (Claude Sonnet 5.5, §9). Temperature is not settable.
 - **Utility scoring:**
   - our own LLM-judge rubric against reference answers (summaries judged for faithfulness);
   - ROUGE-1 recall also reported for comparability with BIPIA.
@@ -439,25 +439,35 @@ Unit tests 1–7 run on a tiny random Llama/Gemma/Qwen config in CI (CPU). Test 
     - MLX quantized, a documented deviation; or
     - a rented GPU.
   - Throughput for BIPIA on MPS is unmeasured. Batching matters, and Phase 3 will estimate it.
-- **Judge, decided by the user (2026-10-25): DeepSeek V4.1 Flash on the official DeepSeek API.**
-  - Called through the OpenAI-compatible client with a custom `base_url`.
-  - **The alias problem:** the model ID `deepseek-flash` is an alias. It is currently served by the
-    snapshot `DeepSeek-V4.1-Flash-1017`, and DeepSeek swaps snapshots without warning. In Sept 2026
-    they rerouted V4 Pro to Flash.
-  - **Mitigations:**
-    1. Log the `model` field returned on every call.
-    2. Store every raw judge prompt and reply, so runs can be re-judged.
-    3. Judge the undefended and NX outputs of one comparison in the same session.
-    4. Report the rule-based-only ASR (no judge) next to the judged ASR.
-    5. Hand-check about 100 judgments and report agreement.
-  - Thinking mode is off for the YES/NO judge if the API allows it; a smoke test confirms how.
-    Temperature 0.
+- **Judge, decided by the user (2026-10-25, revised the same day): Claude Sonnet 5.5 (`claude-sonnet-5-5`) via the
+  Anthropic API, paid from the user's API credits ($200 available).** This replaces the earlier choice of
+  DeepSeek V4.1 Flash, whose model alias is silently re-pointed to new snapshots.
+  - **Calls:**
+    - official `anthropic` Python SDK (dependency in the `evals` extra);
+    - Message Batches API (50% price; results within hours suit overnight runs);
+    - credentials from `ANTHROPIC_API_KEY` or an `ant auth login` profile, never in code.
+  - **Settings:**
+    - thinking turned off for the YES/NO and rubric judges (`thinking: {type: "between_tools"}` at effort
+      `low`), to keep output tokens and cost minimal;
+    - small `max_tokens`.
+    - **No sampling parameters.** As of 2026-10-21 the API rejects `temperature`/`top_p`/`top_k` on every model,
+      so "temperature 0" is not available.
+  - **Reproducibility without temperature 0:**
+    1. Store every raw judge request and reply (JSONL), so anyone can audit the exact grades.
+    2. Measure judge stability by re-judging a ~200-item sample and report the agreement.
+    3. Report the rule-based-only ASR (no judge) next to the judged ASR.
+    4. Hand-check about 100 judgments in Claude Code (the user's subscription, interactive use) and report
+       agreement.
+    5. Judge the undefended, NX and matched-random outputs of one comparison in the same run.
+  - **Refusals:** some BIPIA attack texts (scams, misinformation) may trip safety classifiers
+    (`stop_reason: "refusal"`). Count them, retry them individually, and report the remaining count per condition.
+    Never silently drop an item.
   - Only public benchmark data and model outputs are sent; no secrets.
-- **Judge:**
-  - Needs an API key.
-  - Rough load: ≈3,700 judged outputs per model per condition. For 3 models × 2 conditions that
-    is ~20k short judge calls, roughly 5–10M tokens.
-  - Cost is low single-digit dollars with a small model, tens with a frontier model (estimate).
+- **Judge load and cost (estimate):**
+  - About 30k short judge calls in total: 2 models × 3 conditions (undefended, NX, matched-random), with ASR plus
+    utility judging, plus tuning neighbors. That is about 18M input tokens and very little output.
+  - With the Batch API this is roughly $20–40 on Sonnet 5.5, well inside the $200 budget, re-runs included.
+  - Check the actual spend from `usage` after the first batch, before launching the rest.
 - **Gated weights:** Llama-3.2, Llama-3.1 and Gemma-2 need an HF account with the licenses
   accepted, and a token. Qwen2.5 is ungated.
 
@@ -476,7 +486,8 @@ Unit tests 1–7 run on a tiny random Llama/Gemma/Qwen config in CI (CPU). Test 
 ## 11. Open questions for the user
 
 1. ~~Compute~~ **Answered:** Mac-only for v0 (see §9).
-2. ~~Judge~~ **Answered:** DeepSeek V4.1 Flash, official API (see §9).
+2. ~~Judge~~ **Answered:** Claude Sonnet 5.5 via the Anthropic API and Batch API (see §9). The earlier
+   DeepSeek V4.1 Flash choice was replaced on 2026-10-25.
 3. **Gated models:** do you have a HF token with the Llama-3.2 and Gemma-2 licenses accepted?
 
 ## 11b. Calls made during review (check these)
