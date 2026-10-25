@@ -60,11 +60,34 @@ def utility(model, tok, fit):
     return out
 
 
+@torch.no_grad()
+def fire(model, tok, fit):
+    """Per layer: total ReLU(h·d) over untrusted tokens and mean h·d over injection-note tokens, undefended pass."""
+    from fit import capture
+    from salary import parts_for, SYSTEM
+
+    out = []
+    for rendering in ("md_before", "md_after"):
+        r = render(tok, parts_for(rendering, INJECTION), system=SYSTEM)
+        h = capture(model, r.input_ids)                         # [L, T, D]; index l = output of decoder layer l
+        proj = torch.einsum("ltd,ld->lt", h, fit.d)
+        untrusted = [i for i, m in enumerate(r.untrusted_mask) if m]
+        inj_lo = r.text.index("IMPORTANT")
+        inj = [i for i in untrusted if r.offsets[i][0] >= inj_lo]
+        for l in range(proj.shape[0]):
+            row = dict(rendering=rendering, layer=l, relu_sum_untrusted=round(float(torch.relu(proj[l, untrusted]).sum()), 2),
+                       frac_pos_untrusted=round(float((proj[l, untrusted] > 0).float().mean()), 3),
+                       inj_mean=round(float(proj[l, inj].mean()), 3), inj_max=round(float(proj[l, inj].max()), 3))
+            out.append(row)
+            print(json.dumps(row), flush=True)
+    return out
+
+
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["layers", "determinism", "utility"])
+    ap.add_argument("what", choices=["layers", "determinism", "utility", "fire"])
     args = ap.parse_args()
     model, tok = load(LLAMA)
     fit = load_fit(out_dir(LLAMA, "user") / "fit.safetensors")
-    rows = {"layers": layer_ablation, "determinism": determinism, "utility": utility}[args.what](model, tok, fit)
+    rows = {"layers": layer_ablation, "determinism": determinism, "utility": utility, "fire": fire}[args.what](model, tok, fit)
     (HERE / "out" / f"extra_{args.what}.json").write_text(json.dumps(rows, indent=1))

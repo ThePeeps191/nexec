@@ -17,9 +17,13 @@ The result is:
 - **specific to the instruction direction:** random directions with the same edit sizes don't reproduce it (§4);
 - **harmless on ordinary documents:** 10 of 10 natural doc-QA answers are byte-identical with NX on and off.
 
+Gemma-2-2B gives the same picture on paraphrased injections, using the affine gate: 6/10 followed undefended → 0/10 with NX, versus 5.7/10 for magnitude-matched random directions (§5).
+
 Two qualifications carry into the next step:
 - **The effect lives in early-to-mid layers, not the mid-to-late band the spec assumed** (§3).
-- **Gemma-2-2B is not validated.** Its effect is mostly generic perturbation (§5).
+- **NX reduces but does not eliminate unseen injections on Llama.** It halves them, against nothing for matched random (§5).
+
+> **Correction (final review).** An earlier version of this note used a "matched" random control that recomputed edit sizes at every layer. That over-dosed the random edits by about 4–8× and led to wrong claims that specificity "depends on dose" and that "Gemma is mostly perturbation". Every matched-random number here now comes from the record-and-replay control (`spike/matched.py`, tested in `spike/tests/test_matched.py`).
 
 ## 1. Environment and throughput (Task 1)
 
@@ -44,7 +48,7 @@ Fit on 36 train examples from the 44-example pilot corpus: about 290 instruction
 | Gemma-2-2B | 0.92–0.98 | 50–99% at most layers (the content mean sits on the positive side) | **affine gate** |
 
 - **NVIDIA's claim holds on Llama.** Content tokens have h·d ≤ 0 almost everywhere, so the raw ReLU only fires on instruction-like tokens.
-- **It does not hold on Gemma.** The raw gate would edit most content tokens, and in the sweep it does hurt Gemma's clean answers at α ≥ 1.5.
+- **It does not hold on Gemma.** The raw gate would edit most content tokens, and in the sweep it does hurt Gemma's clean answers, already at α = 1.0 in 4 configs and in more at α ≥ 1.5.
 - **Fit context, provisional call: `user`.** The corpus is rendered as the user turn, which matches NVIDIA's description.
   - `document` gives a slightly higher held-out AUC (Llama ~0.99 at mid layers).
   - But `document` has more positive natural-doc projections in late layers, and both contexts flip the demo.
@@ -67,7 +71,7 @@ Fit on 36 train examples from the 44-example pilot corpus: about 290 instruction
 Undefended Llama-3.2-3B can only answer the clean question in `md_before`, so only that rendering can show all three pass flags.
 
 **Sweep.** 288 configs per model: 2 fit contexts × 4 layer sets × α ∈ {1, 1.5, 2, 4} × 3 gates × 3 renderings.
-- **Llama:** 90 of 288 rows pass all three flags. That is nearly all of the ~96 md_before rows, the only rendering where all-pass is possible.
+- **Llama:** 90 of 288 rows pass all three flags: 89 of the 96 md_before rows, plus 1 csv row. md_before is the only rendering where the undefended model answers the clean table, so it is where all-pass is normally possible.
 - Dozens of configs block the injection in all 3 renderings.
 - No config made the clean answer worse than the undefended baseline.
 
@@ -78,7 +82,7 @@ Undefended Llama-3.2-3B can only answer the clean question in `md_before`, so on
 | 0–4 | 1/3 | no | |
 | 0–8 | **3/3** | yes | |
 | 0–11 | **3/3** | yes | |
-| 5–11 | 3/3 | yes | csv clean answer lost |
+| 5–11 | 3/3 | yes | |
 | 9–27 | 2/3 | yes | |
 | 12–27 (≈ the AUC "band") | **0/3** | no | |
 | 0–26 / 0–27 ("all") | **3/3** | yes | the final layer is a no-op for generation |
@@ -86,41 +90,41 @@ Undefended Llama-3.2-3B can only answer the clean question in `md_before`, so on
 **Finding:**
 - The active layers are roughly **L0–L11 of 28**.
 - The layers where the direction is most *separable* (L12–L26) are not the layers where editing it *changes behavior*.
-- The diagnostics agree: the injection tokens' *mean* h·d is positive at L4–L8 (0.04–0.19, peaking at 0.6–1.2) and turns negative from L12 on (−0.07 at L12 down to −1.23 at L24). They read as content to this direction in later layers, so the ReLU removes little there.
+- **Late edits fire but don't change behavior.** This is not because late layers stop firing. In the undefended pass, the total ReLU activation over the untrusted table tokens is as large or larger in L12–L26 (about 8–27 per layer) as in L4–L10 (about 5–9). The data is in `step0-data/extra_fire.json`. So the 12–27 ablation edits at full strength and still blocks 0/3. The causally active edits are the early-to-mid ones.
 - **Choosing layers by AUC is wrong.** Phase 3 must choose layers by measured effect on the BIPIA train split, with early bands in the grid.
 
 ## 4. Is it the direction or just perturbation? (controls added during execution)
 
-All controls use the faithful config (all layers, α = 1, raw) unless noted.
+**Magnitude-matched random** means: record NXDirection's exact coefficient α·ReLU(h·d − b) for every (layer, untrusted token) during the real prefill, then replay exactly those coefficients along random unit directions. Same tokens, same per-layer per-token edit sizes, different direction. Total replayed coefficient, Llama faithful config: 30.8 for md_before, 26.6 for md_after.
 
-| Control on the table tokens | Llama: renderings blocked (original injection) |
-|---|---|
-| Real direction d | **3/3** |
-| Random unit direction (5 seeds × 2 renderings) | 0/10 |
-| **Magnitude-matched random**: same tokens, same per-token edit size, random direction (5 seeds × 2 renderings) | **0/10** |
-| Negated direction −d (*not* magnitude-matched: fires on ~85% of tokens) | 1/3 |
-| Amplify (+d instead of −d) | breaks the model (degenerate `:\n\n` output) |
+| Control on the table tokens (original injection) | Llama all/α1/raw | Llama L9–17/α2/raw | Gemma all/α1/affine (md_after) |
+|---|---|---|---|
+| Real direction d | blocks 2/2 renderings | blocks 2/2 | correct 85k |
+| Magnitude-matched random (5 seeds × 2 renderings) | **0/10 blocked** | **0/10 blocked** | 0/5 correct (4× "82k", 1× "compromised") |
+| Unmatched random unit d, α unchanged (5 seeds × 2) | 0/10 | — | — |
+| Negated −d (not matched; fires on the ~78–90% of table tokens with h·d < 0, see `extra_fire.json`) | 1/3 renderings | — | — |
+| Amplify (+d instead of −d) | breaks the model (degenerate `:\n\n` output) | — | — |
 
-At a higher dose (L9–17, α = 2), magnitude-matched random blocks about 6 of 10. So **specificity depends on dose**: at the faithful low dose only the real direction works, and at high doses any direction partly works. The neg result is consistent with that, since neg is a larger edit. It is not evidence about sign. **Implication:** prefer a low α across many layers, and make magnitude-matched random a **standard baseline condition** in the BIPIA harness. NVIDIA did not report this control.
+**The salary flip is specific to the instruction direction at both doses tested.** Random edits of the same size do nothing. The neg result comes from a much larger edit, so it says nothing about sign. **Implication:** magnitude-matched random (record and replay) should be a standard baseline condition in the BIPIA harness. It is cheap, it answers "is it the direction?" per model, and NVIDIA did not report it.
 
 ## 5. Paraphrased injections (fixed set of 10, scored by fixed rules)
 
-The rules are listed in `spike/score_paraphrases.py` and the per-item table is in `step0-data/paraphrase_scores.txt`. Each rule checks for the injection's demanded output: "contains BANANA", "≥ 3 French function words", "starts with an emoji", and so on. The rules are strict. For example, an answer starting with 📊 that then answers correctly still counts as followed.
+The rules are listed in `spike/score_paraphrases.py` and the per-item output is in `step0-data/paraphrase_scores.txt`. Each rule checks for the injection's demanded output: "contains BANANA", "≥ 3 French function words", "starts with an emoji", and so on. The rules are strict. For example, an answer that starts with 📊 and then answers correctly still counts as followed.
 
-| Model · rendering · config | Undefended | NX (real d) | Matched-random | Clean correct with NX |
+| Model · rendering · config | Undefended | NX (real d) | Matched random (mean of 3 seeds) | Clean correct with NX |
 |---|---|---|---|---|
-| Llama · md_before · all/α1/raw | 4/10 | **2/10** | 5/10 | 10/10 |
-| Llama · md_after · all/α1/raw | 7/10 | **3/10** | 6/10 | 0/10 (baseline also 0) |
-| Gemma · md_after · all/α1/affine | 6/10 | **0/10** | 2/10 | 10/10 |
-| Gemma · md_after · all/α2/mid | 6/10 | 3/10 | 4/10 | 10/10 |
+| Llama · md_before · all/α1/raw | 4/10 | **2/10** | 4.3/10 | 10/10 |
+| Llama · md_after · all/α1/raw | 7/10 | **3/10** | 6.7/10 | 0/10 (baseline also 0) |
+| Gemma · md_after · all/α1/affine | 6/10 | **0/10** | 5.7/10 | 10/10 |
+| Gemma · md_after · all/α2/mid | 6/10 | **3/10** | 5.0/10 | 10/10 |
 
-- **Llama:** NX roughly halves attack success on unseen injections. Matched-random does nothing, so the effect is specific.
-  - It does **not** eliminate injections. "Say the table is unavailable" and the emoji demand still partly get through.
-  - This is a 44-example pilot direction. The full corpus in Phase 1 should be re-measured against the same 10.
-- **Gemma:** the real direction beats matched-random, but matched-random alone takes 6 → 2. With affine edits about 40× Llama's in size, most of Gemma's effect is perturbation.
-  - **Treat Gemma as not validated.**
-  - Hypothesis to test in Phase 1: Gemma-2's residual norms grow into the hundreds in late layers, so use a per-layer α relative to the norm, or early-layer bands as for Llama.
-- Gemma never followed the original "say I have been compromised" injection, but the injection still degraded its answer (82k instead of 85k). On BIPIA this will show up as utility under attack rather than ASR.
+- **Llama:** NX roughly halves attack success on unseen injections, and matched random does nothing. The effect is specific, but it does **not** eliminate injections.
+  - "Say the table is unavailable" and the emoji demand still get through.
+  - This is a 44-example pilot direction. Re-measure the full Phase 1 corpus against the same 10.
+- **Gemma:** with the affine gate, NX blocks all 10 while matched random blocks almost none, so Gemma's effect is also direction-specific.
+  - The mid gate at α = 2 is weaker (3/10).
+  - Gemma never followed the original "say I have been compromised" injection, but it degraded the answer (82k instead of 85k), which NX repairs. On BIPIA this will show up as utility under attack as well as ASR.
+- **Single rendering, small n.** These are 10 items on one table. They are evidence for direction, not effect-size estimates. BIPIA is where effect sizes come from.
 
 ## 6. Utility spot check
 
@@ -129,11 +133,11 @@ On 10 natural documents in a doc-QA prompt (email, news, code, how-to, meeting n
 ## 7. Implications for Phase 1 and Phase 3 (proposed spec updates)
 
 1. **Layer grid.** Replace "mid-to-late" with layer bands that include early layers (e.g. 0–8, 0–11, 5–11, all). Select by effect on the BIPIA train split, never by AUC.
-2. **Dose.** Prefer α ≈ 1 across many layers. High dose on few layers is less specific.
-3. **Baselines.** Add magnitude-matched random direction as a standard BIPIA condition next to undefended and NX. It is cheap and answers "is it the direction?" for every model.
+2. **Dose.** α = 1 across all layers (the faithful setting) already works on Llama. Nothing here shows that higher doses are less specific, since matched random is null at L9–17/α2 too. Tune α on the BIPIA train split.
+3. **Baselines.** Add magnitude-matched random direction (record and replay, `spike/matched.py`) as a standard BIPIA condition next to undefended and NX. Recomputing coefficients per layer is not matched (see the correction above).
 4. **Utility metrics are baseline-relative.** Llama-3.2-3B's own clean answers depend on prompt layout, so report NX utility relative to undefended utility on the same items, as the spec already says.
-5. **Gemma-2.** Before shipping Gemma directions, re-validate with the full corpus, early-layer bands and a norm-relative α. If matched-random still matches NX, say so in the README.
-6. **Gates.** Raw is confirmed for Llama. Affine and mid were tried on Gemma, and neither is shown to be specific yet.
+5. **Gemma-2.** NX is direction-specific on Gemma with the affine gate (§5), and the raw gate hurts its clean answers (§2). Ship Gemma with the affine gate. Re-validate it on BIPIA with the full corpus and early-layer bands.
+6. **Gates.** Raw for Llama and affine for Gemma, both chosen by the §5.3 rule and both validated against matched random. The mid gate is weaker on Gemma. Drop it unless BIPIA says otherwise.
 7. **Determinism.** Greedy decoding on MPS is byte-stable here, so "average of 3 runs" only matters for sampled decoding.
 
 ## 8. Rulings and deviations made during the spike
@@ -146,5 +150,5 @@ Full list in the execution ledger. Summary:
 - `max_new_tokens` raised from 64 to 160, because Llama's correct clean answer is a 90-token worked sum.
 - The CSV rendering escapes quotes properly.
 - Each rendering is scored against its own undefended clean baseline.
-- The specificity controls (random, magnitude-matched, neg, amplify), the layer ablation, the determinism check and the utility spot check were added beyond the plan.
+- The specificity controls (random, magnitude-matched with record and replay after the final-review fix, neg, amplify), the per-layer firing measurement (`extra_fire.json`), the layer ablation, the determinism check and the utility spot check were added beyond the plan.
 - No prompt renderings were iterated. The three predeclared renderings and ten predeclared paraphrases were used as written.
