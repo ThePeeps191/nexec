@@ -19,9 +19,10 @@ dependencies = [
 
 [project.optional-dependencies]
 viz = ["matplotlib"]
+evals = ["anthropic", "datasets", "nltk", "langdetect", "thefuzz", "emoji", "rouge-score"]
 
 [dependency-groups]
-dev = ["pytest", "ruff", "matplotlib"]
+dev = ["pytest", "ruff", "matplotlib", "anthropic", "datasets", "nltk", "langdetect", "thefuzz", "emoji", "rouge-score"]
 
 [tool.hatch.version]
 path = "src/nexec/_version.py"
