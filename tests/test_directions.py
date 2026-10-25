@@ -85,3 +85,18 @@ def test_resolve_hf_uri(tmp_path, monkeypatch):
     make().save(tmp_path / "snap" / "sub")
     monkeypatch.setattr(dirs, "snapshot_download", lambda repo_id, **kw: str(tmp_path / "snap"))
     assert resolve("org/model", "hf://org/repo/sub") == tmp_path / "snap" / "sub"
+
+
+def test_model_revision_from_commit_hash_or_snapshot(tmp_path, monkeypatch):
+    from nexec.directions import model_revision
+
+    assert model_revision(SimpleNamespace(config=SimpleNamespace(_commit_hash="f" * 40))) == "f" * 40
+    snap = tmp_path / "models--org--m" / "snapshots" / ("a" * 40)
+    snap.mkdir(parents=True)
+    local = SimpleNamespace(config=SimpleNamespace(_commit_hash=None, _name_or_path=str(snap)))
+    assert model_revision(local) == "a" * 40
+    monkeypatch.setattr(dirs, "try_to_load_from_cache", lambda repo, fn: str(snap / fn))
+    hub = SimpleNamespace(config=SimpleNamespace(_commit_hash=None, _name_or_path="org/m"))
+    assert model_revision(hub) == "a" * 40
+    plain = SimpleNamespace(config=SimpleNamespace(_commit_hash=None, _name_or_path=str(tmp_path)))
+    assert model_revision(plain) is None

@@ -8,7 +8,7 @@ from dataclasses import dataclass
 import torch
 
 from nexec.corpus import CORPUS_VERSION, Example, corpus_sha256, load_corpus
-from nexec.directions import Directions, DirectionsConfig, template_sha256
+from nexec.directions import Directions, DirectionsConfig, model_revision, template_sha256
 from nexec.provenance import render
 
 DOC_PREFIX = "Here is a document:\n"
@@ -146,7 +146,7 @@ def fit_directions(model, tok, model_id: str, *, examples: list[Example] | None 
     if heldout:
         diag.update(_heldout_diagnostics(model, tok, heldout, fit, context))
     cfg = DirectionsConfig(
-        model_id=model_id, model_revision=getattr(model.config, "_commit_hash", None),
+        model_id=model_id, model_revision=model_revision(model),
         chat_template_sha256=template_sha256(tok), layers=list(range(L)) if layers is None else list(layers),
         alpha=alpha, gate=gate, fit_context=context,
         corpus_version="custom" if custom else CORPUS_VERSION, corpus_sha256="" if custom else corpus_sha256(),

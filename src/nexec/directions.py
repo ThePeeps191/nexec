@@ -10,6 +10,7 @@ import dataclasses
 import hashlib
 import json
 import os
+import re
 import warnings
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -17,7 +18,7 @@ from pathlib import Path
 from typing import Literal
 
 import torch
-from huggingface_hub import snapshot_download
+from huggingface_hub import snapshot_download, try_to_load_from_cache
 from safetensors.torch import load_file, save_file
 
 from nexec._version import __version__
@@ -92,7 +93,7 @@ class Directions:
         if (cfg.num_hidden_layers, cfg.hidden_size) != (n_layers, d_model):
             problems.append(f"model has {cfg.num_hidden_layers} layers x {cfg.hidden_size} dims; "
                             f"directions have {n_layers} layers x {d_model} dims")
-        rev = getattr(model.config, "_commit_hash", None)
+        rev = model_revision(model)
         if rev and self.config.model_revision and rev != self.config.model_revision:
             problems.append(f"model revision {rev} != directions revision {self.config.model_revision}")
         sha = template_sha256(tok)
@@ -104,6 +105,25 @@ class Directions:
         if strict:
             raise DirectionsMismatchError(msg + " (pass strict=False to apply anyway)")
         warnings.warn(msg, UserWarning, stacklevel=2)
+
+
+_SHA = re.compile(r"[0-9a-f]{40}")
+
+
+def model_revision(model) -> str | None:
+    """The model's HF commit sha: ``config._commit_hash`` if set, else read offline from the cached snapshot path."""
+    cfg = model.config
+    rev = getattr(cfg, "_commit_hash", None)
+    if rev:
+        return rev
+    name = getattr(cfg, "_name_or_path", "") or ""
+    path = Path(name)
+    if not path.exists() and name.count("/") == 1:
+        cached = try_to_load_from_cache(name, "config.json")
+        path = Path(cached).parent if isinstance(cached, str) else path
+    if path.parent.name == "snapshots" and _SHA.fullmatch(path.name):
+        return path.name
+    return None
 
 
 def template_sha256(tok) -> str | None:
