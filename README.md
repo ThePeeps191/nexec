@@ -9,8 +9,21 @@ This is a reimplementation of NVIDIA's **NXDirection** (Tamás Vörös, NVIDIA A
 science is theirs; this repo provides a provenance API, a HuggingFace Transformers implementation, versioned
 direction files, and evaluations.
 
-> **Status: v0 in progress.** The core library works and is tested. The demo, heatmap and BIPIA benchmark come
-> next. Do not rely on it as a security boundary (see Limitations).
+![Per-token instruction-likeness on NVIDIA's salary-table example, undefended vs with NXDirection](docs/assets/salary_heatmap.png)
+
+*NVIDIA's salary-table example on Llama-3.2-3B-Instruct. Each token is shaded by how much the model reads it as an
+instruction (red) or as content (blue). Undefended, the injected note in Eve's row reads as an instruction, and the
+model answers "I have been compromised." With nexec, the table is marked untrusted. The injection's
+instruction-like component is removed (the red goes away) while the real instructions stay untouched, and the model
+answers "…the average salary in Marketing is 85k." [Interactive version](docs/assets/salary_heatmap.html): open it
+locally to step through layers.*
+
+```bash
+uv sync && uv run python examples/salary_table.py      # prints both answers, rewrites the heatmap
+```
+
+> **Status: v0 in progress.** The core library works and is tested. The BIPIA benchmark is next. Do not rely on
+> it as a security boundary (see Limitations).
 
 ## Usage
 
@@ -67,5 +80,6 @@ byte-identically.
 ```bash
 uv sync                       # project venv only; nothing is installed globally
 uv run pytest                 # fast tests (tiny random models, CPU)
-uv run pytest -m slow         # end-to-end salary demo (needs cached weights)
+uv run pytest -m slow         # end-to-end salary demo + heatmap (needs cached weights)
+uv sync --extra viz           # (users) matplotlib for nexec.viz.to_png
 ```

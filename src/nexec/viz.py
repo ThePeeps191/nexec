@@ -20,6 +20,7 @@ class TokenScores:
     tokens: list[str]      # exact source text of each token (from offsets)
     untrusted: list[bool]
     content: list[bool]    # inside some message's content (vs chat-template/special tokens)
+    message: list[int]     # index of the message whose content holds the token (-1 for template tokens)
     before: torch.Tensor   # [L, T] h.d, undefended pass
     after: torch.Tensor    # [L, T] h.d, defended pass (after the edit at hooked layers)
     bias: torch.Tensor     # [L] gate threshold b (zeros for the raw gate)
@@ -62,19 +63,22 @@ def token_scores(nx, conversation: list[dict], *, title: str = "") -> TokenScore
     before = _projections(nx.model, ids, d)
     with nx.protect(enc.untrusted_mask):
         after = _projections(nx.model, ids, d)
-    ranges = [rg for msg in r.part_char_ranges for rg in msg]
-    content = [any(s < b and e > a for a, b in ranges) for s, e in r.offsets]
+    message = [next((k for k, msg in enumerate(r.part_char_ranges) if any(s < b and e > a for a, b in msg)), -1)
+               for s, e in r.offsets]
+    content = [m >= 0 for m in message]
     bias = nx.directions.bias()
     bias = torch.zeros(d.shape[0]) if bias is None else bias.float()
     untrusted = enc.untrusted_mask[0].tolist()
     return TokenScores(tokens=[r.text[s:e] for s, e in r.offsets], untrusted=untrusted, content=content,
+                       message=message,
                        before=before, after=after, bias=bias, hooked=list(nx.directions.config.layers),
                        default_layer=default_layer(before, untrusted, bias), title=title)
 
 
 def _scales(s: TokenScores) -> list[float]:
-    """Per-layer symmetric color scale: 98th percentile of |h.d| over shown tokens, shared by before/after."""
-    idx = torch.tensor(s.content, dtype=torch.bool)
+    """Per-layer symmetric color scale, shared by before/after: 98th percentile of |h.d| over the untrusted tokens
+    (the text under inspection), or over all shown tokens if nothing is untrusted. Brighter values saturate."""
+    idx = torch.tensor(s.untrusted if any(s.untrusted) else s.content, dtype=torch.bool)
     out = []
     for l in range(s.before.shape[0]):
         v = torch.cat([s.before[l, idx], s.after[l, idx]]).abs()
@@ -120,10 +124,13 @@ lay.addEventListener('input',paint);paint();
 
 def _panel(s: TokenScores, which: str, layer: int, scale: float) -> str:
     vals = (s.before if which == "before" else s.after)[layer]
-    spans = []
+    spans, prev = [], None
     for i, (tok, show) in enumerate(zip(s.tokens, s.content, strict=True)):
         if not show:
             continue
+        if prev is not None and s.message[i] != prev:
+            spans.append("<br><br>")
+        prev = s.message[i]
         text = html.escape(tok).replace("\n", "<br>")
         cls = "t u" if s.untrusted[i] else "t"
         spans.append(f'<span class="{cls}" data-i="{i}" style="background:{_color(float(vals[i]), scale)}">'
@@ -166,6 +173,7 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
 
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
+        from matplotlib.patches import Rectangle
     except (ImportError, TypeError) as e:
         raise ImportError("to_png needs matplotlib: install the extra with `pip install nexec[viz]`") from e
 
@@ -173,10 +181,15 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
     scale = _scales(s)[layer]
 
     def lines(vals):
-        rows, row, n = [], [], 0
+        rows, row, n, prev = [], [], 0, None
         for i, (tok, show) in enumerate(zip(s.tokens, s.content, strict=True)):
             if not show:
                 continue
+            if prev is not None and s.message[i] != prev:
+                rows += [row, []]
+                row, n = [], 0
+                tok = tok.lstrip(" ")
+            prev = s.message[i]
             for k, piece in enumerate(tok.split("\n")):
                 if k:
                     rows.append(row)
@@ -194,7 +207,10 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
     panels = [("Undefended", lines(s.before[layer])), ("With NXDirection", lines(s.after[layer]))]
     n_rows = sum(len(r) for _, r in panels) + 2 * len(panels)
     fig_h = 0.9 + 0.26 * n_rows
-    fig = plt.figure(figsize=(0.105 * width_chars + 0.6, fig_h), dpi=200)
+    fig_w = 0.105 * width_chars + 0.6
+    fig = plt.figure(figsize=(fig_w, fig_h), dpi=200)
+    unit_in = fig_w / (width_chars + 4)        # inches per character cell on the x axis
+    mono_pt = unit_in * 72 / 0.64              # DejaVu Sans Mono advance is ~0.602 em; small margin per cell
     fig.patch.set_facecolor("white")
     ax = fig.add_axes((0, 0, 1, 1))
     ax.set_xlim(0, width_chars + 4)
@@ -208,11 +224,13 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
         ax.text(1, y, label, fontsize=9, weight="bold", color="#333", va="center")
         y += 1.0
         for row in rows:
-            for x, piece, v, unt in row:
-                ax.text(1 + x, y, piece, family="monospace", fontsize=8.2, va="center", ha="left",
-                        bbox=dict(boxstyle="square,pad=0.08", fc=_rgb(_color(v, scale)), ec="none"))
+            for x, piece, v, unt in row:  # background boxes first, text on top, so no box clips a glyph
+                ax.add_patch(Rectangle((1 + x, y - 0.42), len(piece), 0.84, facecolor=_rgb(_color(v, scale)),
+                                       edgecolor="none", zorder=1))
+                ax.text(1 + x, y, piece, family="DejaVu Sans Mono", fontsize=mono_pt, va="center", ha="left",
+                        zorder=2)
                 if unt and piece.strip():
-                    ax.plot([1 + x, 1 + x + len(piece)], [y + 0.42, y + 0.42], color="#444", lw=0.6)
+                    ax.plot([1 + x, 1 + x + len(piece)], [y + 0.46, y + 0.46], color="#444", lw=0.6, zorder=3)
             y += 1.0
         y += 1.0
     path = Path(path)
