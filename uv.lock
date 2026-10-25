@@ -1284,6 +1284,8 @@ viz = [
 
 [package.dev-dependencies]
 dev = [
+    { name = "matplotlib", version = "3.10.9", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.11'" },
+    { name = "matplotlib", version = "3.11.2", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.11'" },
     { name = "pytest" },
     { name = "ruff" },
 ]
@@ -1301,6 +1303,7 @@ provides-extras = ["viz"]
 
 [package.metadata.requires-dev]
 dev = [
+    { name = "matplotlib" },
     { name = "pytest" },
     { name = "ruff" },
 ]

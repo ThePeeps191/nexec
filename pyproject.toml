@@ -21,7 +21,7 @@ dependencies = [
 viz = ["matplotlib"]
 
 [dependency-groups]
-dev = ["pytest", "ruff"]
+dev = ["pytest", "ruff", "matplotlib"]
 
 [tool.hatch.version]
 path = "src/nexec/_version.py"

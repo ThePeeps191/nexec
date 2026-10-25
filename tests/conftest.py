@@ -44,3 +44,20 @@ def gemma_tok():
 @pytest.fixture(scope="session")
 def tiny_llama_fullvocab(llama_tok):
     return _tiny_llama(len(llama_tok))
+
+
+@pytest.fixture(scope="session")
+def tiny_nx(tiny_llama_fullvocab, llama_tok):
+    """An NX over a tiny random Llama with the real Llama tokenizer and directions fit on two stub examples."""
+    from nexec import NX
+    from nexec.corpus import Example, Span, Turn
+    from nexec.fit import fit_directions
+
+    examples = [
+        Example("a1", "translation", "train", False, [Turn("user", "Translate to French: the cat sleeps.",
+                [Span(0, 19, "instruction"), Span(19, 20, "boundary"), Span(21, 36, "non_instruction")])]),
+        Example("a2", "translation", "heldout", False, [Turn("user", "Translate to German: good morning.",
+                [Span(0, 19, "instruction"), Span(19, 20, "boundary"), Span(21, 34, "non_instruction")])]),
+    ]
+    dirs = fit_directions(tiny_llama_fullvocab, llama_tok, "org/tiny", examples=examples)
+    return NX.from_pretrained("org/tiny", model=tiny_llama_fullvocab, tokenizer=llama_tok, directions=dirs)
