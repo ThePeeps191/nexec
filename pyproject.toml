@@ -40,3 +40,4 @@ extend-exclude = ["spike"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E741"]  # `l` is the layer index, matching the paper's notation
