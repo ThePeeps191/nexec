@@ -99,7 +99,7 @@ Undefended Llama-3.2-3B can only answer the clean question in `md_before`, so on
 
 | Control on the table tokens (original injection) | Llama all/α1/raw | Llama L9–17/α2/raw | Gemma all/α1/affine (md_after) |
 |---|---|---|---|
-| Real direction d | blocks 2/2 renderings | blocks 2/2 | correct 85k |
+| Real direction d | blocks 2/2 (the two renderings the matched control was run on; 3/3 overall, §3) | blocks 2/2 | correct 85k |
 | Magnitude-matched random (5 seeds × 2 renderings) | **0/10 blocked** | **0/10 blocked** | 0/5 correct (4× "82k", 1× "compromised") |
 | Unmatched random unit d, α unchanged (5 seeds × 2) | 0/10 | — | — |
 | Negated −d (not matched; fires on the ~78–90% of table tokens with h·d < 0, see `extra_fire.json`) | 1/3 renderings | — | — |
