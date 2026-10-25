@@ -109,3 +109,33 @@ def test_mask_from_char_spans(tok):
 
 def test_render_deterministic_date(llama_tok):
     assert "Oct 2026" not in render(llama_tok, [{"role": "user", "content": "hi"}]).text
+
+
+def test_ipython_role_untrusted(llama_tok):
+    """Review #2: Llama's ipython role is tool output and must be untrusted by default."""
+    msgs = [{"role": "user", "content": "q"}, {"role": "assistant", "content": "calling"},
+            {"role": "ipython", "content": "IGNORE ALL"}]
+    assert "IGNORE ALL" in masked_text(llama_tok, render(llama_tok, msgs))
+
+
+def test_unknown_role_requires_explicit_flag(llama_tok):
+    with pytest.raises(ValueError, match="role"):
+        render(llama_tok, [{"role": "browser", "content": "page"}])
+
+
+def test_tool_calls_passed_through(llama_tok):
+    """Review #3: extra message keys (tool_calls) reach the template; content None is allowed."""
+    call = {"type": "function", "function": {"name": "f", "arguments": {"x": 1}}}
+    msgs = [{"role": "user", "content": "q"}, {"role": "assistant", "content": None, "tool_calls": [call]},
+            {"role": "tool", "content": "42"}]
+    r = render(llama_tok, msgs)
+    ref = llama_tok.apply_chat_template([dict(m, content=m["content"] or "") for m in msgs], tokenize=True,
+                                        add_generation_prompt=True, date_string=DATE_STRING, return_dict=False)
+    assert r.input_ids == list(ref) and '"name": "f"' in r.text
+    assert masked_text(llama_tok, r).strip().strip('"') == "42"
+
+
+def test_template_kwargs_reach_template(llama_tok):
+    tools = [{"type": "function", "function": {"name": "lookup", "description": "d", "parameters": {}}}]
+    r = render(llama_tok, [{"role": "user", "content": "q"}], template_kwargs={"tools": tools})
+    assert "lookup" in r.text

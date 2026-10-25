@@ -48,9 +48,21 @@ class Encoded:
     renders: list[Rendered]
 
 
+TRUSTED_ROLES = ("system", "user", "assistant")
+UNTRUSTED_ROLES = ("tool", "ipython")  # tool output; Llama-3 templates use "ipython" for it
+
+
 def _parts(msg: dict) -> list[tuple[str, bool]]:
-    whole = bool(msg.get("untrusted", msg["role"] == "tool"))
-    content = msg.get("content", "")
+    role = msg["role"]
+    if "untrusted" in msg:
+        whole = bool(msg["untrusted"])
+    elif role in UNTRUSTED_ROLES or role in TRUSTED_ROLES:
+        whole = role in UNTRUSTED_ROLES
+    else:
+        raise ValueError(f"unknown role {role!r}: set \"untrusted\": True or False on the message explicitly")
+    content = msg.get("content")
+    if content is None:
+        return []
     if isinstance(content, Untrusted):
         return [(content.text, True)]
     if isinstance(content, str):
@@ -64,6 +76,11 @@ def _parts(msg: dict) -> list[tuple[str, bool]]:
         else:
             raise TypeError(f"message content items must be str or Untrusted, got {type(item).__name__}")
     return out
+
+
+def _extras(msg: dict) -> dict:
+    """Template-visible keys other than content (tool_calls, name, tool_call_id, ...)."""
+    return {k: v for k, v in msg.items() if k not in ("role", "content", "untrusted")}
 
 
 def _apply(tok, messages, add_generation_prompt, template_kwargs) -> str:
@@ -82,14 +99,14 @@ def _supports_system(tok) -> bool:
         return False
 
 
-def _normalize(tok, messages: list[dict]) -> list[tuple[str, list[tuple[str, bool]]]]:
-    msgs = [(m["role"], _parts(m)) for m in messages]
+def _normalize(tok, messages: list[dict]) -> list[tuple[str, list[tuple[str, bool]], dict]]:
+    msgs = [(m["role"], _parts(m), _extras(m)) for m in messages]
     if msgs and msgs[0][0] == "system" and not _supports_system(tok):
         sys_parts = msgs[0][1] + [("\n\n", False)]
         rest = msgs[1:]
         if not rest or rest[0][0] != "user":
             raise TemplateError("template has no system role and the system message is not followed by a user turn")
-        msgs = [("user", sys_parts + rest[0][1])] + rest[1:]
+        msgs = [("user", sys_parts + rest[0][1], rest[0][2])] + rest[1:]
     return msgs
 
 
@@ -109,14 +126,16 @@ def _ranges(parts: list[str], encode_part) -> list[tuple[int, int]]:
 def render(tok, messages: list[dict], *, add_generation_prompt: bool = True,
            template_kwargs: dict | None = None) -> Rendered:
     msgs = _normalize(tok, messages)
-    real = _apply(tok, [{"role": r, "content": "".join(t for t, _ in p)} for r, p in msgs], add_generation_prompt,
-                  template_kwargs)
-    skeleton = _apply(tok, [{"role": r, "content": _sentinel(i)} for i, (r, _) in enumerate(msgs)],
-                      add_generation_prompt, template_kwargs)
+    joined_all = ["".join(t for t, _ in p) for _, p, _ in msgs]
+    real = _apply(tok, [{**x, "role": r, "content": c} for (r, _, x), c in zip(msgs, joined_all, strict=True)],
+                  add_generation_prompt, template_kwargs)
+    slots = [i for i, c in enumerate(joined_all) if c]  # empty content gets no sentinel (templates may drop it)
+    skeleton = _apply(tok, [{**x, "role": r, "content": _sentinel(i) if i in slots else ""}
+                            for i, (r, _, x) in enumerate(msgs)], add_generation_prompt, template_kwargs)
 
-    # Split the skeleton into the template text around each message, noting JSON-quoted content (tojson).
+    # Split the skeleton into the template text around each non-empty message, noting JSON-quoted content (tojson).
     chunks, json_mode, cursor = [], [], 0
-    for i in range(len(msgs)):
+    for i in slots:
         s = _sentinel(i)
         at = skeleton.find(s, cursor)
         if at < 0:
@@ -128,15 +147,17 @@ def render(tok, messages: list[dict], *, add_generation_prompt: bool = True,
     tail = skeleton[cursor:]
 
     # Walk the real render: template chunk, then the message content in whichever encoding the template used.
-    pos, part_ranges, untrusted_ranges = 0, [], []
-    for i, (_, parts) in enumerate(msgs):
-        if not real.startswith(chunks[i], pos):
+    pos, untrusted_ranges = 0, []
+    part_ranges: list[list[tuple[int, int]]] = [[] for _ in msgs]
+    for k, i in enumerate(slots):
+        if not real.startswith(chunks[k], pos):
             raise TemplateError(f"template output diverges before message {i}")
-        pos += len(chunks[i])
+        pos += len(chunks[k])
+        parts = msgs[i][1]
         texts = [t for t, _ in parts]
-        joined = "".join(texts)
-        nxt = chunks[i + 1] if i + 1 < len(msgs) else tail
-        if json_mode[i]:
+        joined = joined_all[i]
+        nxt = chunks[k + 1] if k + 1 < len(slots) else tail
+        if json_mode[k]:
             enc = json.dumps(joined, ensure_ascii=False)
             local = [(a + 1, b + 1) for a, b in _ranges(texts, lambda p: json.dumps(p, ensure_ascii=False)[1:-1])]
         elif real.startswith(joined + nxt, pos):
@@ -149,7 +170,7 @@ def render(tok, messages: list[dict], *, add_generation_prompt: bool = True,
         if not real.startswith(enc + nxt, pos):
             raise TemplateError(f"content of message {i} not found verbatim in the rendered template")
         abs_ranges = [(pos + a, pos + b) for a, b in local]
-        part_ranges.append(abs_ranges)
+        part_ranges[i] = abs_ranges
         untrusted_ranges += [r for r, (_, flag) in zip(abs_ranges, parts, strict=True) if flag and r[1] > r[0]]
         pos += len(enc)
     if real[pos:] != tail:

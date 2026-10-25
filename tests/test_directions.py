@@ -100,3 +100,18 @@ def test_model_revision_from_commit_hash_or_snapshot(tmp_path, monkeypatch):
     assert model_revision(hub) == "a" * 40
     plain = SimpleNamespace(config=SimpleNamespace(_commit_hash=None, _name_or_path=str(tmp_path)))
     assert model_revision(plain) is None
+
+
+def test_model_id_mismatch_raises():
+    """Review #4: directions for one hub model must not silently apply to another same-shape model."""
+    model, tok = fake_model_tok()
+    model.config._name_or_path = "someone/finetune"
+    with pytest.raises(DirectionsMismatchError, match="model id"):
+        make().check_compatible(model, tok)
+
+
+def test_unknown_revision_warns_in_strict_mode():
+    model, tok = fake_model_tok(rev=None)
+    model.config._name_or_path = "/local/dir/that/does/not/exist"
+    with pytest.warns(UserWarning, match="revision"):
+        make().check_compatible(model, tok)

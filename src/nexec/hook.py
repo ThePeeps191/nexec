@@ -31,6 +31,7 @@ class HookState:
     offset: int = 0      # absolute position of the current forward call's first token
     next: int = 0        # absolute position the next call continues from
     started: bool = False
+    cache: object = None  # the cache object seen on the last call
 
 
 def _layers(model):
@@ -59,13 +60,18 @@ def protect(model, *, d: torch.Tensor, layers: list[int], alpha: float, untruste
     def before_model(module, args, kwargs):
         cache = kwargs.get("past_key_values")
         n = cache.get_seq_length() if cache is not None else 0
+        x = kwargs.get("input_ids", args[0] if args else None)
+        t = (x if x is not None else kwargs["inputs_embeds"]).shape[1]
         if n == 0:
-            state.offset = 0
-        elif state.started:
-            state.offset = state.next
+            offset = 0
+        elif state.started and cache is state.cache and n != state.next:
+            offset = state.next  # our own continuing cache under-reports its length (e.g. capped sliding window)
         else:
-            state.offset = n  # a cache prefilled before entering the context
-        state.started = True
+            offset = n  # continuing our sequence, or a cache built elsewhere (shared prefix)
+        if not state.started and offset == 0 and t > mask.shape[1]:
+            raise ValueError(f"untrusted_mask covers {mask.shape[1]} positions but the prompt has {t} tokens; "
+                             "build the mask from the same rendering as input_ids")
+        state.offset, state.cache, state.started = offset, cache, True
 
     def after_model(module, args, kwargs, output):
         x = kwargs.get("input_ids", args[0] if args else None)
@@ -118,3 +124,4 @@ def protect(model, *, d: torch.Tensor, layers: list[int], alpha: float, untruste
     finally:
         for h in handles:
             h.remove()
+        state.cache = None

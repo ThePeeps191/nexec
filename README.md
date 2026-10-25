@@ -53,7 +53,12 @@ byte-identically.
 - **Mitigation, not a guarantee.** Paraphrased injections are reduced, not eliminated. Keep sandboxes and tool
   allowlists, and keep secrets out of prompts.
 - **Needs hidden states.** It works with open-weight models in HF Transformers, not with closed APIs.
-- **Provenance is your job.** nexec does not detect injections. It only acts on tokens you mark.
+- **Provenance is your job.** nexec does not detect injections. It only acts on tokens you mark. Tool messages
+  (`role="tool"` / `"ipython"`) are untrusted by default. Any other unknown role must be marked explicitly.
+- **Special-token text inside untrusted content.** A literal string such as `<|eot_id|>` inside untrusted content
+  is tokenized as a real control token, exactly as `apply_chat_template` does. Those tokens are still masked and
+  edited, but strip or escape such strings from external text if your threat model includes forged chat turns.
+- **Not yet supported with `defend=True`:** beam search and `num_return_sequences > 1`.
 
 ## Development
 

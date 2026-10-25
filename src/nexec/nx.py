@@ -74,10 +74,10 @@ class NX:
                     f"`uv run python scripts/fit_directions.py --model {model_id}`.")
         return cls(model, tokenizer, directions, strict=strict)
 
-    def encode(self, conversations) -> Encoded:
+    def encode(self, conversations, *, template_kwargs: dict | None = None) -> Encoded:
         if conversations and isinstance(conversations[0], dict):
             conversations = [conversations]
-        return encode(self.tok, conversations)
+        return encode(self.tok, conversations, template_kwargs=template_kwargs)
 
     @contextmanager
     def protect(self, untrusted_mask: torch.Tensor, *, layers: list[int] | None = None, alpha: float | None = None,
@@ -99,9 +99,13 @@ class NX:
 
     @torch.no_grad()
     def generate(self, conversations, *, defend: bool = True, layers: list[int] | None = None,
-                 alpha: float | None = None, gate: str | None = None, **generate_kwargs) -> list[str]:
-        """Generate for one conversation (list of messages) or a batch of them; returns one string per row."""
-        enc = self.encode(conversations)
+                 alpha: float | None = None, gate: str | None = None, template_kwargs: dict | None = None,
+                 **generate_kwargs) -> list[str]:
+        """Generate for one conversation (list of messages) or a batch of them; returns one string per row.
+
+        Beam search and ``num_return_sequences > 1`` are not supported with ``defend=True`` (the mask is per row).
+        """
+        enc = self.encode(conversations, template_kwargs=template_kwargs)
         if not defend:
             return self._generate(enc, **generate_kwargs)
         with self.protect(enc.untrusted_mask, layers=layers, alpha=alpha, gate=gate):

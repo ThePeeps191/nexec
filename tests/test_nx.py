@@ -85,3 +85,9 @@ def test_matched_random_deterministic_and_differs_from_nx(nx):
     assert a == b and len(a) == 1
     r = random_unit((3, 64), 0)
     assert torch.allclose(r.norm(dim=-1), torch.ones(3))
+
+
+def test_nx_template_kwargs(nx):
+    tools = [{"type": "function", "function": {"name": "lookup", "description": "d", "parameters": {}}}]
+    enc = nx.encode(CONV, template_kwargs={"tools": tools})
+    assert "lookup" in enc.renders[0].text

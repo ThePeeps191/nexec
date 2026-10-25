@@ -219,3 +219,24 @@ def test_hooks_removed_after_exit(tiny_llama, ids, mask, d):
     with protect(tiny_llama, d=d, layers=LAYERS, alpha=1.0, untrusted_mask=mask):
         pass
     assert torch.equal(base, tiny_llama(ids).logits)
+
+
+def test_reused_context_with_shorter_prefix_cache(tiny_llama, ids, mask, d):
+    """Review #1: a reused context continuing from a prefix cache must use the cache length, not the last sequence."""
+    prefix = tiny_llama(ids[:, :12], use_cache=True)  # shared prefix computed earlier, outside nexec
+    rec = {}
+    with protect(tiny_llama, d=d, layers=LAYERS, alpha=1.0, untrusted_mask=mask, bias=ALWAYS, record=rec):
+        tiny_llama(ids)  # some other full-length sequence first
+        rec.clear()
+        tiny_llama(ids[:, 12:], past_key_values=prefix.past_key_values, use_cache=True)
+    for l in LAYERS:
+        assert rec[l][0].nonzero().squeeze(1).tolist() == [12, 13, 14, 15]
+
+
+def test_mask_shorter_than_prompt_raises(tiny_llama, ids, d):
+    """Review #6: a mask built for a different (shorter) prompt must not be applied silently."""
+    short = torch.zeros(12, dtype=torch.bool)
+    short[10:] = True
+    with pytest.raises(ValueError, match="mask"):
+        with protect(tiny_llama, d=d, layers=LAYERS, alpha=1.0, untrusted_mask=short):
+            tiny_llama(ids)

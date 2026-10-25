@@ -17,8 +17,9 @@ def random_unit(shape, seed: int) -> torch.Tensor:
 
 
 @torch.no_grad()
-def matched_random(nx, conversations, *, seed: int, layers=None, alpha=None, gate=None, **generate_kwargs) -> list[str]:
-    enc = nx.encode(conversations)
+def matched_random(nx, conversations, *, seed: int, layers=None, alpha=None, gate=None, template_kwargs=None,
+                   **generate_kwargs) -> list[str]:
+    enc = nx.encode(conversations, template_kwargs=template_kwargs)
     dev = nx.model.device
     ids, att = enc.input_ids.to(dev), enc.attention_mask.to(dev)
     coefs: dict[int, torch.Tensor] = {}

@@ -93,12 +93,24 @@ class Directions:
         if (cfg.num_hidden_layers, cfg.hidden_size) != (n_layers, d_model):
             problems.append(f"model has {cfg.num_hidden_layers} layers x {cfg.hidden_size} dims; "
                             f"directions have {n_layers} layers x {d_model} dims")
+        unverified = []
+        name = getattr(model.config, "_name_or_path", "") or ""
+        if _HUB_ID.fullmatch(name) and not Path(name).exists():
+            if name != self.config.model_id:
+                problems.append(f"model id {name} != directions model id {self.config.model_id}")
+        elif name:
+            unverified.append(f"model id (loaded from local path {name})")
         rev = model_revision(model)
         if rev and self.config.model_revision and rev != self.config.model_revision:
             problems.append(f"model revision {rev} != directions revision {self.config.model_revision}")
+        elif not rev and self.config.model_revision:
+            unverified.append("model revision")
         sha = template_sha256(tok)
         if sha and self.config.chat_template_sha256 and sha != self.config.chat_template_sha256:
             problems.append("chat template differs from the one the directions were fit with")
+        if unverified and not problems:
+            warnings.warn(f"could not verify {' or '.join(unverified)} against directions for "
+                          f"{self.config.model_id}; make sure they belong to this model", UserWarning, stacklevel=2)
         if not problems:
             return
         msg = f"directions for {self.config.model_id} do not match: " + "; ".join(problems)
@@ -108,6 +120,7 @@ class Directions:
 
 
 _SHA = re.compile(r"[0-9a-f]{40}")
+_HUB_ID = re.compile(r"[\w.-]+/[\w.-]+")
 
 
 def model_revision(model) -> str | None:
