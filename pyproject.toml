@@ -1,20 +1,42 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "nexec"
-version = "0.0.0"
+dynamic = ["version"]
 description = "No-execute bits for LLM tokens: provenance-gated instruction-direction ablation"
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.12,<3.13"
+requires-python = ">=3.10"
 dependencies = [
     "torch>=2.13",
     "transformers>=5.20,<5.21",
     "safetensors",
+    "huggingface_hub",
     "numpy",
-    "matplotlib",
 ]
 
+[project.optional-dependencies]
+viz = ["matplotlib"]
+
 [dependency-groups]
-dev = ["pytest"]
+dev = ["pytest", "ruff", "matplotlib"]
+
+[tool.hatch.version]
+path = "src/nexec/_version.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/nexec"]
 
 [tool.pytest.ini_options]
-testpaths = ["spike/tests"]
+testpaths = ["tests"]
+markers = ["slow: needs cached model weights"]
+addopts = "-m 'not slow'"
+
+[tool.ruff]
+line-length = 120
+extend-exclude = ["spike"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
