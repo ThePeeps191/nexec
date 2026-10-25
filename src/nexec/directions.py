@@ -55,9 +55,9 @@ class Directions:
     mu_non: torch.Tensor     # [L, D]
     config: DirectionsConfig
 
-    def bias(self) -> torch.Tensor | None:
-        """Per-layer ReLU threshold b for the configured gate (None for the raw gate, b = 0)."""
-        gate = self.config.gate
+    def bias(self, gate: str | None = None) -> torch.Tensor | None:
+        """Per-layer ReLU threshold b for ``gate`` (default: the configured gate). None for the raw gate (b = 0)."""
+        gate = gate or self.config.gate
         if gate == "raw":
             return None
         if gate == "affine":
