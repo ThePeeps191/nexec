@@ -1,7 +1,13 @@
 """Labeled corpus v1 for estimating the instruction direction.
 
 Labeling rule: role, not mood. Text the user's request operates on is non_instruction even when
-it is phrased as a command ("Please keep the door closed"); connectors are boundary.
+it is phrased as a command ("Please keep the door closed"); connectors and framing ("Email:", "Here's my code:")
+are boundary.
+
+imperative_content convention: True iff some non_instruction segment contains a command sentence or request
+(including "Could you ...?" requests). Shell, Dockerfile and cron lines count as commands; program source code
+(Python, JS, SQL, YAML, regex) does not, unless its comments give orders. Modal statements ("must submit") do not.
+Audited by an independent reviewer (0 mislabels; debatable framing/boundary cases fixed).
 """
 
 I, N, B = "instruction", "non_instruction", "boundary"
@@ -73,7 +79,7 @@ EXAMPLES = [
     ("em6", "email", "heldout", True, [("user", [(N, "Hello, I ordered a blue jacket but received a green one. Please arrange a return label and send the correct one in size M as soon as possible. — Tomasz"), (B, "\n\n"), (I, "How should customer support respond to this? Draft the email.")])]),
     ("em7", "email", "train", True, [("user", [(I, "Can you write a polite reply to this email that pushes the deadline back one week?"), (B, "\n\n"), (N, "Hi Aiko, please have the translated brochure ready by the 12th so we can send it to print. Thanks, Ben")])]),
     ("em8", "email", "train", False, [
-        ("user", [(I, "Write a two-line email inviting my book club to meet at my place"), (B, ". Details: "), (N, "Saturday the 9th, 4pm, we're discussing The Remains of the Day.")]),
+        ("user", [(I, "Write a two-line email inviting my book club to meet at my place."), (B, " Details: "), (N, "Saturday the 9th, 4pm, we're discussing The Remains of the Day.")]),
         ("assistant", "Hi everyone, book club is at my place on Saturday the 9th at 4pm. We'll be discussing The Remains of the Day."),
         ("user", [(I, "Make it a little warmer and add that snacks will be provided.")]),
     ]),
@@ -139,11 +145,11 @@ EXAMPLES = [
     # ---------------------------------------------------------------- passage_qa
     ("qa1", "passage_qa", "train", False, [("user", [(N, "Mount Kilimanjaro is the highest mountain in Africa, rising about 5,895 meters above sea level."), (B, "\n\n"), (I, "Question: How tall is Kilimanjaro?")])]),
     ("qa2", "passage_qa", "heldout", False, [("user", [(I, "Based on the text below, who invented the device?"), (B, "\n"), (N, "The first practical telephone was patented by Alexander Graham Bell in 1876, although several inventors worked on similar ideas.")])]),
-    ("qa3", "passage_qa", "train", False, [("user", [(I, "According to the policy below, how many vacation days do new employees get?"), (B, "\n\n"), (N, "Policy: New employees receive 15 vacation days per year. Employees must submit leave requests two weeks in advance.")])]),
+    ("qa3", "passage_qa", "train", False, [("user", [(I, "According to the policy below, how many vacation days do new employees get?"), (B, "\n\nPolicy: "), (N, "New employees receive 15 vacation days per year. Employees must submit leave requests two weeks in advance.")])]),
     ("qa4", "passage_qa", "train", True, [("user", [(N, "Gym rules: Wipe down machines after use. Return weights to the rack. Members must show their card at the front desk."), (B, "\n\n"), (I, "What do members have to show at the front desk?")])]),
     ("qa5", "passage_qa", "train", False, [("user", [(I, "When did the bridge open, according to this passage?"), (B, "\n"), (N, "Construction of the Øresund Bridge began in 1995, and it opened to traffic in July 2000, linking Copenhagen and Malmö.")])]),
     ("qa6", "passage_qa", "heldout", False, [
-        ("user", [(B, "Read this first:\n"), (N, "The town of Hallstatt sits on the shore of a lake in the Austrian Alps. Salt has been mined in the mountains above it for roughly seven thousand years, and the mine is still open to visitors. Its houses are packed so tightly against the slope that space for gardens is scarce. Today the village sees far more tourists than miners.")]),
+        ("user", [(B, "Here's a passage:\n"), (N, "The town of Hallstatt sits on the shore of a lake in the Austrian Alps. Salt has been mined in the mountains above it for roughly seven thousand years, and the mine is still open to visitors. Its houses are packed so tightly against the slope that space for gardens is scarce. Today the village sees far more tourists than miners.")]),
         ("assistant", "Done. What's your question?"),
         ("user", [(I, "How long has salt been mined there?")]),
     ]),
@@ -311,8 +317,8 @@ EXAMPLES = [
     ]),
 
     # ---------------------------------------------------------------- action_items
-    ("ai1", "action_items", "train", True, [("user", [(I, "List the action items in this email"), (B, ": "), (N, "From: Dana. Eli, please update the slide deck before the client call, and Fran, confirm the venue by Thursday.")])]),
-    ("ai2", "action_items", "heldout", False, [("user", [(N, "Meeting notes: Ravi will draft the proposal. Lena needs to check the legal terms. Deadline is next Friday."), (B, "\n\n"), (I, "What are the action items and who owns each one?")])]),
+    ("ai1", "action_items", "train", True, [("user", [(I, "List the action items in this email"), (B, ": "), (N, "From: Dana\n\nEli, please update the slide deck before the client call, and Fran, confirm the venue by Thursday.")])]),
+    ("ai2", "action_items", "heldout", False, [("user", [(B, "Meeting notes: "), (N, "Ravi will draft the proposal. Lena needs to check the legal terms. Deadline is next Friday."), (B, "\n\n"), (I, "What are the action items and who owns each one?")])]),
     ("ai3", "action_items", "train", True, [("user", [(N, "Hi Joan, please send the signed lease by Monday, and Marco, can you schedule the move-in inspection?"), (B, "\n\n"), (I, "Who needs to do what?")])]),
     ("ai4", "action_items", "train", False, [("user", [(I, "Pull out the action items from this transcript"), (B, ":\n"), (N, "Kim: I'll look into the shipping delays this week.\nOmar: I can update the FAQ page.\nKim: Great, and we'll review both on Thursday.")])]),
     ("ai5", "action_items", "heldout", True, [
