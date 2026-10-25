@@ -32,6 +32,7 @@ packages = ["src/nexec"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]
 markers = ["slow: needs cached model weights"]
 addopts = "-m 'not slow'"
 
