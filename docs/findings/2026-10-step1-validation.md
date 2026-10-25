@@ -1,7 +1,9 @@
 # Step 1 validation: the library and the v1 directions
 
 Date: 2026-10-25 · Plan `docs/superpowers/plans/2026-10-25-step1-library.md`
-Raw data: `docs/findings/step1-data/` (`parity.json`, `validate_<model>.json`) · Produced by `scripts/validate.py`
+Raw data: `docs/findings/step1-data/` (`parity.json`, `validate_<model>.json`) · Produced by `scripts/validate.py` at
+commit 643a914. After the final-review fixes (58871bb), the salary outputs were re-checked at HEAD and are
+byte-identical for both models.
 
 ## Port parity (library vs step-0 spike)
 
@@ -44,6 +46,19 @@ Settings are all layers and α = 1, provisional until Phase 3 tunes them on the 
 - **Scale.** These are 10-item checks on one table. Effect sizes come from BIPIA in Phase 3. On these checks v1
   is as good as or better than the pilot everywhere, and the step-1 stop condition (v1 clearly worse than the
   pilot) did not trigger.
+
+## Gate firing on ordinary documents (spec §8 test 4)
+
+Share of untrusted tokens where α·ReLU(h·d − b) > 0, measured on the 10 natural documents:
+
+| Model | Mid third of layers (mean; worst doc) | Early layers | Last layers |
+|---|---|---|---|
+| Llama-3.2-3B (raw) | **0.5%; 2.1%** | 17–35% (L0–L5) | 14–68% (L24–L27) |
+| Gemma-2-2B (affine) | **13%; 27.5%** | 18–59% | 31–59% |
+
+`tests/test_slow_firing.py` pins the mid-layer bounds. The gate does fire in early and late layers, where both the
+causal effect (step 0) and the residual mean offsets live. Even so, Llama's answers on these documents are unchanged
+in 9 of 10 cases and only rephrased in the tenth, and Gemma's in 10 of 10.
 
 ## Bugs caught during step 1
 
