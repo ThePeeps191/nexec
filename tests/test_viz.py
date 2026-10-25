@@ -70,7 +70,59 @@ def test_png_written(tiny_nx, tmp_path):
 
 def test_png_without_matplotlib_raises_hint(tiny_nx, tmp_path, monkeypatch):
     s = token_scores(tiny_nx, CONV)
-    monkeypatch.setitem(sys.modules, "matplotlib", None)
-    monkeypatch.setitem(sys.modules, "matplotlib.pyplot", None)
+    for name in [m for m in sys.modules if m == "matplotlib" or m.startswith("matplotlib.")] + [
+            "matplotlib", "matplotlib.figure", "matplotlib.backends.backend_agg", "matplotlib.patches"]:
+        monkeypatch.setitem(sys.modules, name, None)  # simulate "not installed", even if loaded earlier
     with pytest.raises(ImportError, match=r"nexec\[viz\]"):
         to_png(s, tmp_path / "x.png")
+
+
+def test_html_written_as_utf8(tiny_nx, tmp_path, monkeypatch):
+    """Review #1: the page declares utf-8, so it must be written as utf-8 whatever the locale."""
+    from pathlib import Path
+
+    seen = {}
+    real = Path.write_text
+
+    def spy(self, data, encoding=None, **kw):
+        seen["encoding"] = encoding
+        return real(self, data, encoding=encoding, **kw)
+
+    monkeypatch.setattr(Path, "write_text", spy)
+    to_html(token_scores(tiny_nx, [{"role": "user", "content": ["表: ", untrusted("数据 h·d")]}]), tmp_path / "u.html")
+    assert seen["encoding"] == "utf-8"
+
+
+def test_png_layout_wraps_long_tokens(tiny_nx):
+    """Review #2: a token longer than the line width is split, never drawn past the edge."""
+    from nexec.viz import _layout
+
+    s = token_scores(tiny_nx, [{"role": "user", "content": ["see: ", untrusted("x" * 200)]}])
+    rows = _layout(s, s.before[0], width_chars=40)
+    assert max(x + len(piece) for row in rows for x, piece, _, _ in row) <= 40
+    assert sum(len(piece) for row in rows for _, piece, _, _ in row if set(piece) == {"x"}) >= 190
+
+
+def test_after_bounded_affine_gate(tiny_nx):
+    """Review #3: with a nonzero bias (affine gate), edited untrusted tokens sit at or below b."""
+    import dataclasses
+
+    from nexec import NX
+
+    d = tiny_nx.directions
+    affine = dataclasses.replace(d, config=dataclasses.replace(d.config, gate="affine"))
+    nx = NX(tiny_nx.model, tiny_nx.tok, affine)
+    s = token_scores(nx, CONV)
+    assert s.bias.abs().sum() > 0
+    m = torch.tensor(s.untrusted)
+    for l in s.hooked:
+        assert (s.after[l, m] <= s.bias[l] + 1e-4).all()
+
+
+def test_png_keeps_caller_backend(tiny_nx, tmp_path):
+    """Review #4: to_png must not switch the process-wide matplotlib backend."""
+    import matplotlib
+
+    matplotlib.use("svg")
+    to_png(token_scores(tiny_nx, CONV), tmp_path / "b.png")
+    assert matplotlib.get_backend().lower() == "svg"

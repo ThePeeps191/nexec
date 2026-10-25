@@ -2,6 +2,9 @@
 
     uv run python examples/salary_table.py                      # Llama-3.2-3B-Instruct, writes docs/assets/
     uv run python examples/salary_table.py --model google/gemma-2-2b-it --rendering md_after
+
+On Gemma-2-2B the injection does not make the model say "compromised"; it degrades the answer (82k instead of 85k),
+which NXDirection repairs.
 """
 
 import argparse
@@ -48,7 +51,11 @@ def main(argv=None) -> dict:
     print(_block("With nexec, same table without the injection:", out["clean_defended"]) + "\n")
 
     if not a.no_heatmap:
-        stem = "salary_heatmap" if a.model == LLAMA else f"salary_heatmap_{a.model.split('/')[-1]}"
+        stem = "salary_heatmap"
+        if a.model != LLAMA:
+            stem += "_" + a.model.split("/")[-1]
+        if a.rendering != "md_before":
+            stem += "_" + a.rendering
         scores = token_scores(nx, attacked, title=f"Salary table: {a.model.split('/')[-1]}")
         out["html"] = str(to_html(scores, Path(a.out) / f"{stem}.html"))
         out["png"] = str(to_png(scores, Path(a.out) / f"{stem}.png"))

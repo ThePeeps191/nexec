@@ -43,8 +43,14 @@ def default_layer(before: torch.Tensor, untrusted: list[bool], bias: torch.Tenso
 def _projections(model, ids: torch.Tensor, d: torch.Tensor) -> torch.Tensor:
     outs: dict[int, torch.Tensor] = {}
     layers = model.model.layers
-    hs = [layer.register_forward_hook(lambda m, a, o, l=l: outs.__setitem__(l, o[0].float().cpu()))
-          for l, layer in enumerate(layers)]
+    def grab(l):
+        def hook(module, args, output):
+            if not isinstance(output, torch.Tensor):
+                raise TypeError(f"decoder layer {l} returned {type(output).__name__}; expected a tensor")
+            outs[l] = output[0].float().cpu()  # batch row 0 (token_scores takes one conversation)
+        return hook
+
+    hs = [layer.register_forward_hook(grab(l)) for l, layer in enumerate(layers)]
     try:
         model(ids, use_cache=False)
     finally:
@@ -90,9 +96,9 @@ def _color(v: float, scale: float) -> str:
     """Diverging red (instruction-like, +) / blue (content-like, -), white at 0."""
     t = max(-1.0, min(1.0, v / scale))
     if t >= 0:
-        g = int(255 - 160 * t)
+        g = round(255 - 160 * t)
         return f"rgb(255,{g},{g})"
-    g = int(255 + 160 * t)
+    g = round(255 + 160 * t)
     return f"rgb({g},{g},255)"
 
 
@@ -147,7 +153,7 @@ def to_html(s: TokenScores, path) -> Path:
     data = {"before": [[round(float(x), 3) for x in row] for row in s.before],
             "after": [[round(float(x), 3) for x in row] for row in s.after],
             "scale": [round(x, 4) for x in scales], "hooked": s.hooked}
-    payload = json.dumps(data).replace("<", "\\u003c").replace("&", "\\u0026")
+    payload = json.dumps(data, allow_nan=False).replace("<", "\\u003c").replace("&", "\\u0026")
     L = s.before.shape[0]
     doc = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1"><title>nexec heatmap</title>
@@ -163,16 +169,41 @@ red = reads as an instruction, blue = reads as content. Underlined tokens are ma
 <script type="application/json" id="nxdata">{payload}</script>
 <script>{_SCRIPT}</script></main></body></html>
 """
-    path.write_text(doc)
+    path.write_text(doc, encoding="utf-8")
     return path
 
 
-def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int = 92) -> Path:
-    try:
-        import matplotlib
+def _layout(s: TokenScores, vals: torch.Tensor, width_chars: int) -> list[list[tuple[int, str, float, bool]]]:
+    """Wrap shown tokens into rows of (x, text, value, untrusted) on a character grid of ``width_chars`` columns.
+    New messages start a new paragraph; newlines break rows; pieces longer than a row are split across rows."""
+    rows, row, n, prev = [], [], 0, None
+    for i, (tok, show) in enumerate(zip(s.tokens, s.content, strict=True)):
+        if not show:
+            continue
+        if prev is not None and s.message[i] != prev:
+            rows += [row, []]
+            row, n = [], 0
+            tok = tok.lstrip(" ")
+        prev = s.message[i]
+        for k, line in enumerate(tok.split("\n")):
+            if k:
+                rows.append(row)
+                row, n = [], 0
+            while line:
+                if n >= width_chars or (n + len(line) > width_chars and row and len(line) <= width_chars):
+                    rows.append(row)
+                    row, n = [], 0
+                piece, line = line[: width_chars - n], line[width_chars - n:]
+                row.append((n, piece, float(vals[i]), s.untrusted[i]))
+                n += len(piece)
+    rows.append(row)
+    return rows
 
-        matplotlib.use("Agg")
-        import matplotlib.pyplot as plt
+
+def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int = 92) -> Path:
+    try:  # object-oriented API only: never touch pyplot or the caller's process-wide backend
+        from matplotlib.backends.backend_agg import FigureCanvasAgg
+        from matplotlib.figure import Figure
         from matplotlib.patches import Rectangle
     except (ImportError, TypeError) as e:
         raise ImportError("to_png needs matplotlib: install the extra with `pip install nexec[viz]`") from e
@@ -181,34 +212,14 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
     scale = _scales(s)[layer]
 
     def lines(vals):
-        rows, row, n, prev = [], [], 0, None
-        for i, (tok, show) in enumerate(zip(s.tokens, s.content, strict=True)):
-            if not show:
-                continue
-            if prev is not None and s.message[i] != prev:
-                rows += [row, []]
-                row, n = [], 0
-                tok = tok.lstrip(" ")
-            prev = s.message[i]
-            for k, piece in enumerate(tok.split("\n")):
-                if k:
-                    rows.append(row)
-                    row, n = [], 0
-                if not piece:
-                    continue
-                if n + len(piece) > width_chars and row:
-                    rows.append(row)
-                    row, n = [], 0
-                row.append((n, piece, float(vals[i]), s.untrusted[i]))
-                n += len(piece)
-        rows.append(row)
-        return rows
+        return _layout(s, vals, width_chars)
 
     panels = [("Undefended", lines(s.before[layer])), ("With NXDirection", lines(s.after[layer]))]
     n_rows = sum(len(r) for _, r in panels) + 2 * len(panels)
     fig_h = 0.9 + 0.26 * n_rows
     fig_w = 0.105 * width_chars + 0.6
-    fig = plt.figure(figsize=(fig_w, fig_h), dpi=200)
+    fig = Figure(figsize=(fig_w, fig_h), dpi=200)
+    FigureCanvasAgg(fig)
     unit_in = fig_w / (width_chars + 4)        # inches per character cell on the x axis
     mono_pt = unit_in * 72 / 0.64              # DejaVu Sans Mono advance is ~0.602 em; small margin per cell
     fig.patch.set_facecolor("white")
@@ -236,7 +247,6 @@ def to_png(s: TokenScores, path, *, layer: int | None = None, width_chars: int =
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     fig.savefig(path, facecolor="white")
-    plt.close(fig)
     return path
 
 
