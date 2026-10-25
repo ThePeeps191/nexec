@@ -21,7 +21,7 @@ dependencies = [
 viz = ["matplotlib"]
 
 [dependency-groups]
-dev = ["pytest", "ruff", "matplotlib"]
+dev = ["pytest", "ruff"]
 
 [tool.hatch.version]
 path = "src/nexec/_version.py"
@@ -36,7 +36,6 @@ addopts = "-m 'not slow'"
 
 [tool.ruff]
 line-length = 120
-extend-exclude = ["spike"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]

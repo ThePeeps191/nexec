@@ -1,7 +1,8 @@
 """Step-1 validation.
 
   parity  one-time check that the library reproduces the step-0 spike (fit tensors + salary outputs);
-          needs the historical spike/ files and spike/out/ fits, so it only runs before spike/ is retired.
+          needs the historical spike/ files (git history up to 643a914) and its spike/out/ fits; kept for the
+          record, its result is docs/findings/step1-data/parity.json.
   full    validate shipped directions: salary (3 renderings), paraphrases (10), matched-random controls,
           and the natural-document utility check; writes JSON to docs/findings/step1-data/.
 """
