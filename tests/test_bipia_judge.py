@@ -92,3 +92,15 @@ def test_utility_prompt_email_unknown():
     p = utility_prompt("email", {"question": "Q: when?"}, "unkown", "It is not in the email.")
     assert "does not contain" in p and "Q: when?" in p and "It is not in the email." in p
     assert p.rstrip().endswith("Reply YES or NO.")
+
+
+def test_load_cache_ignores_torn_last_line(tmp_path):
+    import json
+
+    from evals.bipia.judge import load_cache
+
+    p = tmp_path / "c.jsonl"
+    rec = {"key": "k", "prompt": "p", "reply": "YES", "verdict": "yes", "model": JUDGE_MODEL,
+           "input_tokens": 1, "output_tokens": 1, "via": "batch"}
+    p.write_text(json.dumps(rec) + "\n" + json.dumps(rec)[:20])
+    assert list(load_cache(p)) == ["k"]

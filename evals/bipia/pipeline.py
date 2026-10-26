@@ -156,7 +156,9 @@ def select(model_id: str, results: dict[str, dict], baseline: dict) -> str:
     """Min dev ASR s.t. utility drop <= max(2pt, NVIDIA's drop); ties prefer the shipped config (all_a1)."""
     cap = max(0.02, NVIDIA_DROP.get(model_id, 0.02))
     base_u = baseline["utility"]["mean"]
-    ok = {t: r for t, r in results.items() if base_u - r["utility"]["mean"] <= cap}
+    ok = {t: r for t, r in results.items() if base_u - r["utility"]["mean"] <= cap + 1e-9}
+    if not ok:
+        print(f"select: no config within the {100 * cap:.1f}pt utility cap; choosing by ASR alone", flush=True)
     pool = ok or results
     best = min(pool.values(), key=lambda r: r["asr"]["mean"])["asr"]["mean"]
     tied = [t for t, r in pool.items() if r["asr"]["mean"] == best]

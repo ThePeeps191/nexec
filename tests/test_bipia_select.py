@@ -20,3 +20,9 @@ def test_select_respects_utility_cap_and_prefers_shipped_on_ties():
     assert pipeline.select(llama, results, base) == "all_a1"  # early_a2 drops 5pt > cap; tie -> shipped
     results["early_a1"] = res(0.02, 0.73)
     assert pipeline.select(llama, results, base) == "early_a1"
+
+
+def test_select_cap_tolerates_float_rounding():
+    llama = "meta-llama/Llama-3.2-3B-Instruct"
+    base = res(0.3, 0.5)  # 0.5 - 0.47 == 0.030000000000000027 in floats
+    assert pipeline.select(llama, {"all_a1": res(0.05, 0.5), "early_a1": res(0.01, 0.47)}, base) == "early_a1"

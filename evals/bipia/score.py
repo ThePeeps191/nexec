@@ -70,6 +70,16 @@ def summarize_utility(rows: list[dict], *, n_boot: int = 2000, seed: int = 0) ->
             "excluded": sum(excluded.values())}
 
 
+def paired_diff(a: dict, b: dict, *, n_boot: int = 2000, seed: int = 0) -> dict:
+    """b − a on the same items. a, b: {uid: bool | None}; items unscored in either are dropped."""
+    keys = sorted(k for k in a if k in b and a[k] is not None and b[k] is not None)
+    d = [int(b[k]) - int(a[k]) for k in keys]
+    rng = random.Random(seed)
+    boots = sorted(sum(rng.choices(d, k=len(d))) / len(d) for _ in range(n_boot))
+    return {"n": len(d), "diff": sum(d) / len(d), "ci": (boots[int(0.025 * n_boot)], boots[int(0.975 * n_boot) - 1]),
+            "gained": d.count(1), "lost": d.count(-1)}
+
+
 def pct(x: float) -> str:
     return "—" if x != x else f"{100 * x:.1f}%"
 

@@ -29,8 +29,8 @@ uv sync && uv run python examples/salary_table.py      # prints both answers, re
 
 ## Results: BIPIA
 
-On BIPIA's email, table, abstract and code tasks, with 3,300 attacked and 300 clean test samples per condition,
-judged by Claude Sonnet 5.5. Full report:
+On BIPIA's email, table, abstract and code tasks, with 3,300 attacked test samples per condition and 300 clean
+ones (undefended and nexec), judged by Claude Sonnet 5.5. Full report:
 [`docs/findings/2026-10-step3-bipia.md`](docs/findings/2026-10-step3-bipia.md).
 
 | Model | Attack success, undefended → nexec | Magnitude-matched random control | Clean utility, undefended → nexec |

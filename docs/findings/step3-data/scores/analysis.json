@@ -1,0 +1,222 @@
+{
+ "Llama-3.2-3B-Instruct": {
+  "undefended": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 322,
+     "n": 2317,
+     "asr": 0.13897280966767372
+    },
+    "rule": {
+     "k": 399,
+     "n": 960,
+     "asr": 0.415625
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 1978,
+     "yes": 322,
+     "refused": 23,
+     "unknown": 17
+    },
+    "utility": {
+     "no": 116,
+     "yes": 160,
+     "unknown": 24
+    }
+   },
+   "asr_mean_unknown_as_success": 0.23365534438454327
+  },
+  "nx": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 22,
+     "n": 2337,
+     "asr": 0.009413778348309799
+    },
+    "rule": {
+     "k": 237,
+     "n": 960,
+     "asr": 0.246875
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 2310,
+     "yes": 22,
+     "unknown": 5,
+     "refused": 3
+    },
+    "utility": {
+     "no": 117,
+     "yes": 160,
+     "unknown": 23
+    }
+   },
+   "asr_mean_unknown_as_success": 0.08465022296544036,
+   "utility_paired_pooled_vs_undefended": {
+    "n": 300,
+    "diff": 0.0,
+    "ci": [
+     -0.023333333333333334,
+     0.023333333333333334
+    ],
+    "gained": 7,
+    "lost": 7
+   }
+  },
+  "matched": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 302,
+     "n": 2316,
+     "asr": 0.1303972366148532
+    },
+    "rule": {
+     "k": 400,
+     "n": 960,
+     "asr": 0.4166666666666667
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 2001,
+     "yes": 302,
+     "refused": 24,
+     "unknown": 13
+    },
+    "utility": {}
+   },
+   "asr_mean_unknown_as_success": 0.22697604702401755
+  },
+  "tuned": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 12,
+     "n": 2338,
+     "asr": 0.0051325919589392645
+    },
+    "rule": {
+     "k": 208,
+     "n": 960,
+     "asr": 0.21666666666666667
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 2322,
+     "unknown": 4,
+     "yes": 12,
+     "refused": 2
+    },
+    "utility": {
+     "no": 118,
+     "yes": 156,
+     "unknown": 26
+    }
+   },
+   "asr_mean_unknown_as_success": 0.0718581415491215,
+   "utility_paired_pooled_vs_undefended": {
+    "n": 300,
+    "diff": -0.013333333333333334,
+    "ci": [
+     -0.04,
+     0.013333333333333334
+    ],
+    "gained": 7,
+    "lost": 11
+   }
+  }
+ },
+ "gemma-2-2b-it": {
+  "undefended": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 350,
+     "n": 2339,
+     "asr": 0.1496365968362548
+    },
+    "rule": {
+     "k": 366,
+     "n": 960,
+     "asr": 0.38125
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "unknown": 163,
+     "no": 1826,
+     "yes": 350,
+     "refused": 1
+    },
+    "utility": {
+     "yes": 138,
+     "no": 141,
+     "unknown": 21
+    }
+   },
+   "asr_mean_unknown_as_success": 0.2649553516252626
+  },
+  "nx": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 12,
+     "n": 2340,
+     "asr": 0.005128205128205128
+    },
+    "rule": {
+     "k": 73,
+     "n": 960,
+     "asr": 0.07604166666666666
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 2242,
+     "unknown": 86,
+     "yes": 12
+    },
+    "utility": {
+     "yes": 147,
+     "no": 139,
+     "unknown": 14
+    }
+   },
+   "asr_mean_unknown_as_success": 0.05402777777777778,
+   "utility_paired_pooled_vs_undefended": {
+    "n": 300,
+    "diff": 0.03,
+    "ci": [
+     -0.01,
+     0.07
+    ],
+    "gained": 25,
+    "lost": 16
+   }
+  },
+  "matched": {
+   "by_scorer_pooled": {
+    "judge": {
+     "k": 293,
+     "n": 2340,
+     "asr": 0.1252136752136752
+    },
+    "rule": {
+     "k": 403,
+     "n": 960,
+     "asr": 0.4197916666666667
+    }
+   },
+   "verdicts": {
+    "asr": {
+     "no": 1878,
+     "yes": 293,
+     "unknown": 169
+    },
+    "utility": {}
+   },
+   "asr_mean_unknown_as_success": 0.2638888888888889
+  }
+ }
+}

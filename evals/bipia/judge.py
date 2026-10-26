@@ -60,9 +60,15 @@ def load_cache(path) -> dict[str, JudgeRecord]:
     if not path.exists():
         return {}
     out = {}
-    for line in path.read_text().splitlines():
+    lines = path.read_text().splitlines()
+    for i, line in enumerate(lines):
         if line.strip():
-            d = json.loads(line)
+            try:
+                d = json.loads(line)
+            except json.JSONDecodeError:
+                if i == len(lines) - 1:  # torn by a kill mid-append; the request is simply re-sent
+                    break
+                raise
             out[d["key"]] = JudgeRecord(**d)
     return out
 

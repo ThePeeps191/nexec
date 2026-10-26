@@ -18,11 +18,38 @@ CONDITIONS = ("undefended", "nx", "matched")
 
 
 def read_records(path) -> list[dict]:
+    """All complete records. A batch torn by a kill mid-append (a truncated last gzip member) is dropped."""
     path = Path(path)
     if not path.exists():
         return []
+    out = []
     with gzip.open(path, "rt") as fh:  # reads concatenated gzip members (one per appended batch)
-        return [json.loads(line) for line in fh if line.strip()]
+        try:
+            for line in fh:
+                if line.strip():
+                    out.append(json.loads(line))
+        except (EOFError, gzip.BadGzipFile):
+            pass
+    return out
+
+
+def _repair(path, records) -> None:
+    """Rewrite ``path`` from its readable records if it has a torn tail, so later appends stay readable."""
+    path = Path(path)
+    if not path.exists():
+        return
+    try:
+        with gzip.open(path, "rb") as fh:
+            while fh.read(1 << 20):
+                pass
+        return
+    except (EOFError, gzip.BadGzipFile):
+        pass
+    tmp = path.with_suffix(".tmp")
+    with gzip.open(tmp, "wt") as fh:
+        for r in records:
+            fh.write(json.dumps(r, ensure_ascii=False) + "\n")
+    tmp.replace(path)
 
 
 def _append(path, records) -> None:
@@ -44,11 +71,18 @@ def run(nx, condition: str, items: list[dict], out_path, *, layers=None, alpha=N
     Returns the number of new records written."""
     if condition not in CONDITIONS:
         raise ValueError(f"condition must be one of {CONDITIONS}")
-    done = {r["uid"] for r in read_records(out_path)}
+    existing = read_records(out_path)
+    _repair(out_path, existing)
+    done = {r["uid"] for r in existing}
     todo = sorted((it for it in items if it["uid"] not in done), key=lambda it: _length(it["conversation"]))
     cfg = nx.directions.config
     eff_layers = cfg.layers if layers is None else layers
     eff_alpha = cfg.alpha if alpha is None else alpha
+    settings = (condition, cfg.model_id, f"{eff_layers[0]}-{eff_layers[-1]}" if eff_layers else "", eff_alpha, cfg.gate)
+    seen = {(r["condition"], r["model"], r["layers"], r["alpha"], r["gate"]) for r in existing}
+    if seen - {settings}:
+        raise ValueError(f"{out_path} holds records made with different settings {sorted(seen - {settings})}; "
+                         f"now {settings}. Use a different tag.")
 
     def mnt(it):
         return max_new_tokens.get(it["meta"].get("task"), 160) if isinstance(max_new_tokens, dict) else max_new_tokens
@@ -68,9 +102,8 @@ def run(nx, condition: str, items: list[dict], out_path, *, layers=None, alpha=N
                 outs = nx.generate(convs, layers=layers, alpha=alpha, **gen)
             else:
                 outs = matched_random(nx, convs, seed=0, layers=layers, alpha=alpha, **gen)
-            _append(out_path, [{"uid": it["uid"], **it["meta"], "condition": condition, "model": cfg.model_id,
-                                "layers": f"{eff_layers[0]}-{eff_layers[-1]}" if eff_layers else "",
-                                "alpha": eff_alpha, "gate": cfg.gate, "output": o}
+            _append(out_path, [{"uid": it["uid"], **it["meta"], "condition": condition, "model": settings[1],
+                                "layers": settings[2], "alpha": eff_alpha, "gate": cfg.gate, "output": o}
                                for it, o in zip(batch, outs, strict=True)])
             written += len(batch)
             if torch.backends.mps.is_available():
