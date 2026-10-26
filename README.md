@@ -24,8 +24,28 @@ to step through layers.*
 uv sync && uv run python examples/salary_table.py      # prints both answers, rewrites the heatmap
 ```
 
-> **Status: v0 in progress.** The core library works and is tested. The BIPIA benchmark is next. Do not rely on
-> it as a security boundary (see Limitations).
+> **Status: v0.** The core library works and is tested, and BIPIA results are below. Do not rely on it as a
+> security boundary (see Limitations).
+
+## Results: BIPIA
+
+On BIPIA's email, table, abstract and code tasks, with 3,300 attacked and 300 clean test samples per condition,
+judged by Claude Sonnet 5.5. Full report:
+[`docs/findings/2026-10-step3-bipia.md`](docs/findings/2026-10-step3-bipia.md).
+
+| Model | Attack success, undefended → nexec | Magnitude-matched random control | Clean utility, undefended → nexec |
+|---|---|---|---|
+| Llama-3.2-3B-Instruct | 22.9% → **8.3%** | 22.3% | 55.0% → 55.5% |
+| Gemma-2-2B-it | 22.0% → **3.0%** | 21.7% | 47.0% → 49.5% |
+
+- **Claude-judged attacks almost vanish:** Llama 13.9% → 0.9%, Gemma 15.0% → 0.5%.
+- **Style-only and code injections partly survive, mostly on Llama.** BIPIA's rule-scored attacks include "use
+  emojis in your answer" and malicious code pasted into a Stack Overflow answer, and Llama's rule-scored ASR only
+  falls 41.6% → 24.7%.
+- **The direction is doing the work.** A random direction with identical per-token edit sizes does nothing.
+- **Utility is unchanged within noise.**
+
+NVIDIA reports lower residuals (0.1% / 0.2%) over 5 tasks, with an unnamed judge.
 
 ## Usage
 
@@ -67,7 +87,8 @@ byte-identically.
 
 ## Limitations
 
-- **Mitigation, not a guarantee.** Paraphrased injections are reduced, not eliminated. Keep sandboxes and tool
+- **Mitigation, not a guarantee.** On BIPIA, 3–8% of injections still succeed. Code-shaped injections and terse
+  style requests are the weakest cases. Paraphrased injections are reduced, not eliminated. Keep sandboxes and tool
   allowlists, and keep secrets out of prompts.
 - **Needs hidden states.** It works with open-weight models in HF Transformers, not with closed APIs.
 - **Provenance is your job.** nexec does not detect injections. It only acts on tokens you mark. Tool messages

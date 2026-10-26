@@ -1,0 +1,45 @@
+{
+ "baseline": {
+  "asr": 0.20323888145173286,
+  "utility": 0.5
+ },
+ "grid": {
+  "all_a1": {
+   "asr": 0.0,
+   "utility": 0.46,
+   "layers": "0-25",
+   "alpha": 1.0
+  },
+  "all_a2": {
+   "asr": 0.0,
+   "utility": 0.46,
+   "layers": "0-25",
+   "alpha": 2.0
+  },
+  "early_a1": {
+   "asr": 0.009259259259259259,
+   "utility": 0.45,
+   "layers": "0-10",
+   "alpha": 1.0
+  },
+  "early_a2": {
+   "asr": 0.0,
+   "utility": 0.47,
+   "layers": "0-10",
+   "alpha": 2.0
+  },
+  "midearly_a1": {
+   "asr": 0.0,
+   "utility": 0.45,
+   "layers": "5-16",
+   "alpha": 1.0
+  },
+  "midearly_a2": {
+   "asr": 0.0,
+   "utility": 0.47000000000000003,
+   "layers": "5-16",
+   "alpha": 2.0
+  }
+ },
+ "choice": "all_a1"
+}

@@ -24,6 +24,17 @@ Checkpoint **passed**. The salary flip reproduces on Llama-3.2-3B at the faithfu
 - **§5.2 fit context:** `user`, provisionally.
 - **Paraphrased injections:** NX roughly halves unseen-injection success on Llama with the 44-example pilot direction, but does not eliminate it. Re-measure after the full corpus.
 
+**Step 3 outcome (2026-10-26), read with `docs/findings/2026-10-step3-bipia.md`.** BIPIA, 4 tasks, Claude
+Sonnet 5.5 judge:
+- **Llama:** ASR 22.9% → 8.3%.
+- **Gemma:** ASR 22.0% → 3.0%.
+- **Utility:** no measurable change.
+- **Control:** matched random does nothing (22.3% / 21.7%).
+- **Tuning:** the train-split selection keeps the shipped all-layers α = 1 for Gemma. For Llama it picks layers
+  0–11 at α = 2, which gives 7.1% on test, within the CI of shipped. The shipped default is unchanged.
+- **Residual:** BIPIA's rule-scored attacks (emoji, language, code-snippet insertion) carry most of what remains,
+  especially on Llama. Corpus v2 should add code-shaped and style-shaped instruction examples.
+
 ## 1. What the source actually says (verified)
 
 Read directly from the NVIDIA page, including the formula images, which are not in its text:
