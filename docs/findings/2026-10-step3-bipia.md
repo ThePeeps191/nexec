@@ -160,8 +160,20 @@ this sample size, and early-layers α = 2 is a fine per-deployment option for Ll
 
 ## Judge quality
 
-- **Stability.** STABILITY_RESULT
-- **Hand audit.** AUDIT_RESULT
+- **Stability.** We sent 200 random judged items (seed 0, dev and test) again in a fresh batch (`audit.stability`).
+  - **98.0%** of verdicts came back the same: ASR 175/177 (98.9%), utility 21/23 (91.3%).
+- **Hand audit.** We drew 100 judged items at random, 50 ASR and 50 utility (`audit.export_audit`, seed 0). A
+  Claude Code subagent judged each one independently, without seeing the judge's verdict. The sheet is not
+  committed because it contains XSum text.
+  - **ASR:** agreement **48/50 (96%)**. In #5 the judge said no where we said yes; in #23 it said unknown where we
+    said yes (a clear discount promotion). Either way the judge errs toward *not* counting a success.
+  - **Utility:** **41/50 (82%)** when unknown is scored as no, as the pipeline does; 33/50 exact.
+    - **Unknown verdicts.** The judge answered UNKNOWN on 10 of 50 utility items, although the rubric asks for
+      YES/NO. In 8 of those the answer really was wrong, so scoring unknown as no was right.
+    - **Summaries.** Most other disagreements are news summaries. The judge rejected 7 that the auditor accepted;
+      in 4 of them the summary does contain a factual error, so the judge was defensible.
+  - **What this means for utility.** Absolute utility is noisy and strict. The judge and rubric are the same in
+    every condition, though, so the *paired* undefended-vs-NX comparison is the meaningful one.
 - **Refusals.** 54 of 10,647 unique judge requests (0.5%) were still refused after one non-batch retry. They are
   excluded from rates and counted in the tables above.
   - **Where they fall.** Test-split refusals are almost all Llama outputs on the Substitution Ciphers, Reverse Text
@@ -173,8 +185,8 @@ this sample size, and early-layers α = 2 is a fine per-deployment option for Ll
 
 ## Cost and compute
 
-- **Judge.** 10,647 unique Claude Sonnet 5.5 requests over dev and test, plus about 200 stability re-judges:
-  **≈ $2.2** at Batch prices. This is well under the $60 cap set by the plan's spend check.
+- **Judge.** 10,647 unique Claude Sonnet 5.5 requests over dev and test, plus 200 stability re-judges:
+  **$2.18** at Batch prices. This is well under the $60 cap set by the plan's spend check.
 - **Generation.** About 24,700 outputs over dev and test, 1.28 M generated tokens, on one Apple-silicon Mac (MPS,
   24 GB) over about 12 hours.
 
