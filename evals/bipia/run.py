@@ -10,6 +10,8 @@ import gzip
 import json
 from pathlib import Path
 
+import torch
+
 from nexec.controls import matched_random
 
 CONDITIONS = ("undefended", "nx", "matched")
@@ -71,5 +73,7 @@ def run(nx, condition: str, items: list[dict], out_path, *, layers=None, alpha=N
                                 "alpha": eff_alpha, "gate": cfg.gate, "output": o}
                                for it, o in zip(batch, outs, strict=True)])
             written += len(batch)
+            if torch.backends.mps.is_available():
+                torch.mps.empty_cache()  # length-sorted batches vary in shape; don't let the MPS pool grow into swap
             log(f"{condition}: {len(done) + written}/{len(done) + len(todo)}")
     return written

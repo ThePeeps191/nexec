@@ -91,3 +91,14 @@ def test_nx_template_kwargs(nx):
     tools = [{"type": "function", "function": {"name": "lookup", "description": "d", "parameters": {}}}]
     enc = nx.encode(CONV, template_kwargs={"tools": tools})
     assert "lookup" in enc.renders[0].text
+
+
+def test_matched_random_record_pass_skips_full_vocab_logits(nx):
+    # The record pass only needs the hooks' coefficients; full [B, T, vocab] logits cost GBs on long prompts.
+    shapes = []
+    h = nx.model.register_forward_hook(lambda m, a, kw, out: shapes.append(tuple(out.logits.shape)), with_kwargs=True)
+    try:
+        matched_random(nx, CONV, seed=0, max_new_tokens=1)
+    finally:
+        h.remove()
+    assert shapes[0][1] == 1

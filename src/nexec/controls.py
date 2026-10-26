@@ -24,7 +24,8 @@ def matched_random(nx, conversations, *, seed: int, layers=None, alpha=None, gat
     ids, att = enc.input_ids.to(dev), enc.attention_mask.to(dev)
     coefs: dict[int, torch.Tensor] = {}
     with nx.protect(enc.untrusted_mask, layers=layers, alpha=alpha, gate=gate, record=coefs):
-        nx.model(ids, attention_mask=att, position_ids=(att.cumsum(-1) - 1).clamp(min=0), use_cache=False)
+        nx.model(ids, attention_mask=att, position_ids=(att.cumsum(-1) - 1).clamp(min=0), use_cache=False,
+                 logits_to_keep=1)  # only the hooks' coefficients are needed; full-vocab logits cost GBs
     R = random_unit(nx.directions.d.shape, seed)
     with nx.protect(enc.untrusted_mask, layers=layers, alpha=alpha, gate=gate, replay=(coefs, R)):
         return nx._generate(enc, **generate_kwargs)
