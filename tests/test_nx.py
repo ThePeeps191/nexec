@@ -52,6 +52,23 @@ def test_protect_overrides(nx):
     assert torch.allclose(recs["alpha2"][0], 2 * recs["default"][0])
 
 
+def test_protect_default_alpha_comes_from_directions_config(nx):
+    """The bundled nexec.json alpha is the runtime default: no hardcoded 1.0 on the protect path."""
+    enc = nx.encode(CONV)
+    recs = {}
+    old = nx.directions.config.alpha
+    try:
+        for a in (1.0, 3.0):
+            nx.directions.config.alpha = a
+            rec = {}
+            with nx.protect(enc.untrusted_mask, record=rec):
+                nx.model(enc.input_ids, attention_mask=enc.attention_mask)
+            recs[a] = rec
+    finally:
+        nx.directions.config.alpha = old
+    assert torch.allclose(recs[3.0][0], 3 * recs[1.0][0])
+
+
 def test_generate_batch_returns_one_string_per_row(nx):
     convs = [CONV, [{"role": "user", "content": "hi"}], CONV]
     out = nx.generate(convs, **GEN)
