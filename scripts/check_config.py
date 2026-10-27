@@ -2,7 +2,7 @@
 spec §8 test 4), doc-QA answers identical with NX on vs off, and the salary demo answer. The clean salary check uses
 the md_after layout (Gemma's demo); undefended Llama already misses that one, its demo layout is md_before.
 
-    uv run python scripts/check_config.py --model meta-llama/Llama-3.2-3B-Instruct --gate affine --alpha 4
+    PYTHONPATH=. uv run python scripts/check_config.py --model meta-llama/Llama-3.2-3B-Instruct --configs raw:1 affine:4
 """
 
 import argparse

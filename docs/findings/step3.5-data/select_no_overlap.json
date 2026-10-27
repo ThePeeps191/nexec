@@ -1,0 +1,23 @@
+{
+ "Llama-3.2-3B-Instruct": {
+  "choice": "affine_a4",
+  "objective": {
+   "raw_a1": 0.12434831920273688,
+   "raw_a2": 0.09560464078536367,
+   "raw_a4": 0.038503086419753085,
+   "affine_a1": 0.021141975308641973,
+   "affine_a2": 0.010956790123456791,
+   "affine_a4": 0.003626543209876543
+  },
+  "n_dropped": 24
+ },
+ "gemma-2-2b-it": {
+  "choice": "shipped",
+  "objective": {
+   "affine_a1": 0.01597222222222222,
+   "affine_a2": 0.011805555555555555
+  },
+  "n_dropped": 24
+ },
+ "note": "dev2 objective with the 24 email items whose raw context is also in the test subset dropped (dev2.overlaps_test)"
+}

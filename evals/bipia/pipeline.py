@@ -8,9 +8,6 @@
 
 Generations and per-item verdicts are written under docs/findings/step3-data/ (committed). The judge cache with full
 prompts stays in evals/bipia/cache/ (gitignored: utility prompts quote XSum reference summaries).
-
-The `nx` condition uses the bundled config. Gemma's bundled alpha became 2 in step 3.5; the step-3 Gemma `nx` tag was
-alpha 1, so reproduce it with `--alpha 1`.
 """
 
 from __future__ import annotations

@@ -9,5 +9,5 @@ if str(ROOT) not in sys.path:
 
 LLAMA = "meta-llama/Llama-3.2-3B-Instruct"
 GEMMA = "google/gemma-2-2b-it"
-# Gemma alpha 2: step-3.5 retune (docs/findings/2026-10-step3.5-residual.md)
-SHIPPED = {LLAMA: dict(gate="raw", alpha=1.0), GEMMA: dict(gate="affine", alpha=2.0)}
+# Step 3.5 kept alpha 1 for both; stronger settings are opt-in (docs/findings/2026-10-step3.5-residual.md)
+SHIPPED = {LLAMA: dict(gate="raw", alpha=1.0), GEMMA: dict(gate="affine", alpha=1.0)}

@@ -49,3 +49,7 @@ def test_v35_choice_rule():
     cands.pop("affine_a1")
     assert choose(llama, 0.47, cands) == "raw_a2"  # tie at alpha 2: shipped gate
     assert choose(llama, 0.47, {"x": c("affine", 2.0, 0.0, 0.30)}) == "shipped"
+    # The pre-registered cap is max(2pt, 3.0pt) for both models (not step 3's per-model NVIDIA drop, 6.7pt for
+    # Gemma): Gemma's 4pt dev drop at alpha 1 and 2 makes both ineligible, so the rule keeps shipped.
+    gemma = {"affine_a1": c("affine", 1.0, 0.014, 0.46), "affine_a2": c("affine", 2.0, 0.010, 0.46)}
+    assert choose("google/gemma-2-2b-it", 0.50, gemma) == "shipped"

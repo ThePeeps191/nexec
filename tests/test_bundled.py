@@ -6,9 +6,9 @@ import torch
 from nexec.corpus import CORPUS_VERSION, corpus_sha256
 from nexec.directions import Directions, resolve
 
-# (gate, alpha, n_layers, d_model). Gemma alpha 2: step-3.5 retune (docs/findings/2026-10-step3.5-residual.md).
+# (gate, alpha, n_layers, d_model). Step 3.5 kept alpha 1 for both (docs/findings/2026-10-step3.5-residual.md).
 SHIPPED = {"meta-llama/Llama-3.2-3B-Instruct": ("raw", 1.0, 28, 3072),
-           "google/gemma-2-2b-it": ("affine", 2.0, 26, 2304)}
+           "google/gemma-2-2b-it": ("affine", 1.0, 26, 2304)}
 
 
 @pytest.mark.parametrize("model_id", sorted(SHIPPED))

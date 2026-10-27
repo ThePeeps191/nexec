@@ -47,5 +47,7 @@
    "objective": 0.010416666666666666
   }
  },
- "choice": "affine_a2"
+ "choice": "shipped",
+ "choice_as_run": "affine_a2",
+ "choice_as_run_cap": "per-model NVIDIA drop (6.7pt for Gemma), not pre-registered"
 }

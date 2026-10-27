@@ -1,8 +1,8 @@
 """Spec §8 test 4: on ordinary documents the gate barely fires in mid layers ("only instruction-like tokens move").
 
 Measured at the shipped settings (10 natural documents, mid third of layers): Llama raw gate, alpha 1 fires on 0.5% of
-untrusted tokens (max 2.1% per doc); Gemma affine gate 13% (max 27.5%) at alpha 1 and 8.7% (max 17.1%) at the shipped
-alpha 2 (step 3.5, docs/findings/step3.5-data/check_gemma-2-2b-it.json). Bounds leave headroom for numeric drift.
+untrusted tokens (max 2.1% per doc); Gemma affine gate, alpha 1 13% (max 27.5%). Re-measured in step 3.5
+(docs/findings/step3.5-data/check_*.json). Bounds leave headroom for numeric drift.
 """
 
 import sys

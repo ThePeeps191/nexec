@@ -39,13 +39,13 @@ Sonnet 5.5 judge:
 The diagnostics show the surviving injections already score high on the direction and get edited; Llama follows them
 anyway because α = 1 is too weak a dose. A pre-registered selection (dev2 rule-scored set + dev) and test acceptance
 gave these results:
-- **Gemma:** default **α = 2** (affine). Test ASR 3.0% → 1.8%, paired utility vs undefended +2.7 pt [−1.3, +6.7],
-  matched random 21.2%.
-- **Llama:** default **unchanged** (raw, α = 1). Affine α = 4 reaches 0.6% ASR but fails the utility criterion
-  (−5.7 pt [−10.3, −1.3]). It is documented as an opt-in. The default gate stays raw, as the §5.3
-  rule picks.
-- **Code floor:** about 5–12% of outputs reproduce a bare snippet with no instruction, which is content use invited by
-  the user's question, not injection.
+- **Defaults unchanged** (all layers, α = 1; raw gate for Llama, affine for Gemma).
+- **Llama:** affine α = 4 reaches 0.6% test ASR but fails the utility criterion (−5.7 pt [−10.3, −1.3]). Opt-in only.
+- **Gemma:** α = 2 reaches 1.8% test ASR with paired utility +2.7 pt [−1.3, +6.7] vs undefended. But the
+  pre-registered 3.0 pt dev cap, applied as written, makes it ineligible, so the rule keeps shipped. Opt-in only.
+- **Code:** 7–12% of code answers reproduce a bare snippet that carries no instruction (60 items), i.e. content use
+  the user's question invites.
+- **Lesson for the next pre-registration:** state every per-model constant and the comparator explicitly.
 
 ## 1. What the source actually says (verified)
 
