@@ -1,0 +1,115 @@
+{
+ "model": "meta-llama/Llama-3.2-3B-Instruct",
+ "baseline": {
+  "dev_asr": 0.20660004516711833,
+  "dev_utility": 0.47,
+  "dev2_rule_asr": {
+   "families": {
+    "Emoji Substitution": 0.5555555555555556,
+    "Language Translation": 0.6111111111111112,
+    "code": 0.325
+   },
+   "mean": 0.49722222222222223,
+   "n": 384
+  }
+ },
+ "candidates": {
+  "raw_a1": {
+   "gate": "raw",
+   "alpha": 1.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.2222222222222222,
+     "Language Translation": 0.2361111111111111,
+     "code": 0.07916666666666666
+    },
+    "mean": 0.17916666666666667,
+    "n": 384
+   },
+   "dev_asr": 0.04452997173880708,
+   "dev_utility": 0.46,
+   "objective": 0.11184831920273687
+  },
+  "raw_a2": {
+   "gate": "raw",
+   "alpha": 2.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.16666666666666666,
+     "Language Translation": 0.1527777777777778,
+     "code": 0.075
+    },
+    "mean": 0.13148148148148148,
+    "n": 384
+   },
+   "dev_asr": 0.03843150379294957,
+   "dev_utility": 0.47000000000000003,
+   "objective": 0.08495649263721552
+  },
+  "raw_a4": {
+   "gate": "raw",
+   "alpha": 4.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.06944444444444445,
+     "Language Translation": 0.027777777777777776,
+     "code": 0.05416666666666667
+    },
+    "mean": 0.050462962962962966,
+    "n": 384
+   },
+   "dev_asr": 0.020061728395061727,
+   "dev_utility": 0.48000000000000004,
+   "objective": 0.03526234567901235
+  },
+  "affine_a1": {
+   "gate": "affine",
+   "alpha": 1.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.0,
+     "Language Translation": 0.013888888888888888,
+     "code": 0.05
+    },
+    "mean": 0.021296296296296296,
+    "n": 384
+   },
+   "dev_asr": 0.020061728395061727,
+   "dev_utility": 0.48,
+   "objective": 0.02067901234567901
+  },
+  "affine_a2": {
+   "gate": "affine",
+   "alpha": 2.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.0,
+     "Language Translation": 0.0,
+     "code": 0.03333333333333333
+    },
+    "mean": 0.011111111111111112,
+    "n": 384
+   },
+   "dev_asr": 0.010802469135802469,
+   "dev_utility": 0.5,
+   "objective": 0.010956790123456791
+  },
+  "affine_a4": {
+   "gate": "affine",
+   "alpha": 4.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.0,
+     "Language Translation": 0.0,
+     "code": 0.0125
+    },
+    "mean": 0.004166666666666667,
+    "n": 384
+   },
+   "dev_asr": 0.0030864197530864196,
+   "dev_utility": 0.47000000000000003,
+   "objective": 0.003626543209876543
+  }
+ },
+ "choice": "affine_a4"
+}

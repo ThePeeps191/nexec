@@ -175,6 +175,7 @@ def main(argv=None):
     ap.add_argument("--tags", nargs="*", default=["undefended", "nx", "matched"])
     ap.add_argument("--layers", default=None, help="a-b")
     ap.add_argument("--alpha", type=float, default=None)
+    ap.add_argument("--gate", choices=["raw", "affine", "mid"], default=None, help="override the shipped gate")
     ap.add_argument("--tag", default=None)
     a = ap.parse_args(argv)
     layers = None
@@ -185,6 +186,8 @@ def main(argv=None):
         from nexec import NX
 
         nx = NX.from_pretrained(a.model)
+        if a.gate:
+            nx.directions.config.gate = a.gate
         for c in a.conditions:
             generate(nx, a.model, a.split, c, a.tag or c, layers=layers, alpha=a.alpha)
     elif a.cmd == "gen-grid":

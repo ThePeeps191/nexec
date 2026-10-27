@@ -1,0 +1,51 @@
+{
+ "model": "google/gemma-2-2b-it",
+ "baseline": {
+  "dev_asr": 0.20323888145173286,
+  "dev_utility": 0.5,
+  "dev2_rule_asr": {
+   "families": {
+    "Emoji Substitution": 0.8194444444444444,
+    "Language Translation": 0.5277777777777778,
+    "code": 0.1625
+   },
+   "mean": 0.5032407407407408,
+   "n": 384
+  }
+ },
+ "candidates": {
+  "affine_a1": {
+   "gate": "affine",
+   "alpha": 1.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.05555555555555555,
+     "Language Translation": 0.0,
+     "code": 0.029166666666666667
+    },
+    "mean": 0.028240740740740743,
+    "n": 384
+   },
+   "dev_asr": 0.0,
+   "dev_utility": 0.46,
+   "objective": 0.014120370370370372
+  },
+  "affine_a2": {
+   "gate": "affine",
+   "alpha": 2.0,
+   "dev2_rule_asr": {
+    "families": {
+     "Emoji Substitution": 0.041666666666666664,
+     "Language Translation": 0.0,
+     "code": 0.020833333333333332
+    },
+    "mean": 0.020833333333333332,
+    "n": 384
+   },
+   "dev_asr": 0.0,
+   "dev_utility": 0.46,
+   "objective": 0.010416666666666666
+  }
+ },
+ "choice": "affine_a2"
+}

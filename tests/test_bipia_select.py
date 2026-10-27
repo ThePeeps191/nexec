@@ -26,3 +26,26 @@ def test_select_cap_tolerates_float_rounding():
     llama = "meta-llama/Llama-3.2-3B-Instruct"
     base = res(0.3, 0.5)  # 0.5 - 0.47 == 0.030000000000000027 in floats
     assert pipeline.select(llama, {"all_a1": res(0.05, 0.5), "early_a1": res(0.01, 0.47)}, base) == "early_a1"
+
+
+def test_v35_choice_rule():
+    import sys
+    from pathlib import Path
+
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
+    from select_v35 import choose
+
+    llama = "meta-llama/Llama-3.2-3B-Instruct"
+
+    def c(gate, alpha, obj, util):
+        return {"gate": gate, "alpha": alpha, "objective": obj, "dev_utility": util}
+
+    cands = {"raw_a1": c("raw", 1.0, 0.2, 0.47), "affine_a2": c("affine", 2.0, 0.05, 0.45),
+             "affine_a4": c("affine", 4.0, 0.01, 0.40)}
+    assert choose(llama, 0.47, cands) == "affine_a2"  # a4 drops 7pt > 3pt cap
+    cands["raw_a2"] = c("raw", 2.0, 0.05, 0.47)
+    cands["affine_a1"] = c("affine", 1.0, 0.05, 0.46)
+    assert choose(llama, 0.47, cands) == "affine_a1"  # tie: smaller alpha first
+    cands.pop("affine_a1")
+    assert choose(llama, 0.47, cands) == "raw_a2"  # tie at alpha 2: shipped gate
+    assert choose(llama, 0.47, {"x": c("affine", 2.0, 0.0, 0.30)}) == "shipped"
