@@ -8,7 +8,24 @@ dynamic = ["version"]
 description = "No-execute bits for LLM tokens: provenance-gated instruction-direction ablation"
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE", "src/nexec/directions/*/NOTICE.md"]
 requires-python = ">=3.10"
+authors = [{ name = "Danny Wang" }]
+keywords = ["llm", "prompt-injection", "security", "activation-steering", "interpretability", "transformers"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+    "Topic :: Security",
+]
 dependencies = [
     "torch>=2.13",
     "transformers>=5.20,<5.21",
@@ -16,6 +33,12 @@ dependencies = [
     "huggingface_hub",
     "numpy",
 ]
+
+[project.urls]
+Homepage = "https://github.com/ThePeeps191/nexec"
+Source = "https://github.com/ThePeeps191/nexec"
+Issues = "https://github.com/ThePeeps191/nexec/issues"
+"NVIDIA NXDirection" = "https://research.nvidia.com/ai-security/nxdirection-no-execute-along-instruction-direction"
 
 [project.optional-dependencies]
 viz = ["matplotlib"]
@@ -29,6 +52,10 @@ path = "src/nexec/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/nexec"]
+
+[tool.hatch.build.targets.sdist]
+# the library, its tests, the demo and the eval harness (which tests and demo import); findings data stays in the repo
+include = ["/src/nexec", "/tests", "/examples", "/evals", "/scripts", "/README.md", "/LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

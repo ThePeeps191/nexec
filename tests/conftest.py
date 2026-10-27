@@ -27,18 +27,24 @@ def tiny_gemma2():
     return Gemma2ForCausalLM(cfg).eval()
 
 
-@pytest.fixture(scope="session")
-def llama_tok():
+def _gated_tokenizer(model_id: str):
+    """The real tokenizer (gated on the HF Hub); without access, e.g. CI without an HF_TOKEN, the test is skipped."""
     from transformers import AutoTokenizer
 
-    return AutoTokenizer.from_pretrained(LLAMA)
+    try:
+        return AutoTokenizer.from_pretrained(model_id)
+    except OSError as e:
+        pytest.skip(f"needs the gated {model_id} tokenizer (accept its license, set HF_TOKEN): {type(e).__name__}")
+
+
+@pytest.fixture(scope="session")
+def llama_tok():
+    return _gated_tokenizer(LLAMA)
 
 
 @pytest.fixture(scope="session")
 def gemma_tok():
-    from transformers import AutoTokenizer
-
-    return AutoTokenizer.from_pretrained(GEMMA)
+    return _gated_tokenizer(GEMMA)
 
 
 @pytest.fixture(scope="session")
