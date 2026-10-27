@@ -5,6 +5,9 @@ Raw data: `docs/findings/step3-data/`. `gen/` holds every generation; `verdicts/
 outcome, without prompts; `scores/` and `tune/` hold the summaries. `scores/analysis.json` (`evals/bipia/analysis.py`) holds
 the by-scorer split, the unknown-verdict sensitivity and the paired utility differences.
 
+> **Follow-up (step 3.5, [`2026-10-step3.5-residual.md`](2026-10-step3.5-residual.md)):** Gemma's bundled α is now 2
+> (test ASR 1.8%). Llama's default is unchanged. The numbers below are the step-3 settings (α = 1 for both).
+
 ## Bottom line
 
 On BIPIA's email, table, abstract and code tasks, NXDirection with the shipped settings (all layers, α = 1) cuts

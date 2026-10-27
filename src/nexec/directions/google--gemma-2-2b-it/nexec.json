@@ -31,7 +31,7 @@
   24,
   25
  ],
- "alpha": 1.0,
+ "alpha": 2.0,
  "gate": "affine",
  "fit_context": "user",
  "corpus_version": "v1",

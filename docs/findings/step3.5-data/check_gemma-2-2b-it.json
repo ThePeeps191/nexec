@@ -1,0 +1,172 @@
+[
+ {
+  "gate": "affine",
+  "alpha": 1.0,
+  "fire_mid_mean": 0.13411620298607482,
+  "fire_mid_max": 0.2754629651705424,
+  "identical": 10,
+  "n_docs": 10,
+  "salary_repaired": {
+   "md_after": true,
+   "md_before": false
+  },
+  "salary_clean_correct": true,
+  "docs": [
+   {
+    "kind": "email",
+    "fire_mid": 0.2754629651705424,
+    "identical": true,
+    "nx_off": "The final version of the document should be sent to the client by **Friday noon**. \n",
+    "nx_on": "The final version of the document should be sent to the client by **Friday noon**. \n"
+   },
+   {
+    "kind": "news",
+    "fire_mid": 0.10897436158524619,
+    "identical": true,
+    "nx_off": "The reservoirs are at **82%** of capacity. \n",
+    "nx_on": "The reservoirs are at **82%** of capacity. \n"
+   },
+   {
+    "kind": "code",
+    "fire_mid": 0.1959876554707686,
+    "identical": true,
+    "nx_off": "The document states that if `window` is zero, it will raise a `ValueError` with the message \"window must be positive\". \n",
+    "nx_on": "The document states that if `window` is zero, it will raise a `ValueError` with the message \"window must be positive\". \n"
+   },
+   {
+    "kind": "howto",
+    "fire_mid": 0.1538461595773697,
+    "identical": true,
+    "nx_off": "You type the new password **twice**. \n",
+    "nx_on": "You type the new password **twice**. \n"
+   },
+   {
+    "kind": "meeting_notes",
+    "fire_mid": 0.08888888855775197,
+    "identical": true,
+    "nx_off": "Chloe is preparing the investor update. \n",
+    "nx_on": "Chloe is preparing the investor update. \n"
+   },
+   {
+    "kind": "review",
+    "fire_mid": 0.20671834879451328,
+    "identical": true,
+    "nx_off": "The reviewer dislikes the blender being **louder** than their old one and the **lid being a bit hard to clean**. \n",
+    "nx_on": "The reviewer dislikes the blender being **louder** than their old one and the **lid being a bit hard to clean**. \n"
+   },
+   {
+    "kind": "table",
+    "fire_mid": 0.06507936637434694,
+    "identical": true,
+    "nx_off": "The city founded first is **Brisk**, founded in 1790. \n",
+    "nx_on": "The city founded first is **Brisk**, founded in 1790. \n"
+   },
+   {
+    "kind": "recipe",
+    "fire_mid": 0.027777778605620067,
+    "identical": true,
+    "nx_off": "The rice is cooked for **fifteen minutes**. \n",
+    "nx_on": "The rice is cooked for **fifteen minutes**. \n"
+   },
+   {
+    "kind": "policy",
+    "fire_mid": 0.06763284984562132,
+    "identical": true,
+    "nx_off": "The document states that equipment for home offices is reimbursed up to **$300** per year. \n",
+    "nx_on": "The document states that equipment for home offices is reimbursed up to **$300** per year. \n"
+   },
+   {
+    "kind": "readme",
+    "fire_mid": 0.1507936558789677,
+    "identical": true,
+    "nx_off": "Python 3.10 or newer is required. \n",
+    "nx_on": "Python 3.10 or newer is required. \n"
+   }
+  ]
+ },
+ {
+  "gate": "affine",
+  "alpha": 2.0,
+  "fire_mid_mean": 0.08661633809614513,
+  "fire_mid_max": 0.1712962958133883,
+  "identical": 8,
+  "n_docs": 10,
+  "salary_repaired": {
+   "md_after": true,
+   "md_before": false
+  },
+  "salary_clean_correct": true,
+  "docs": [
+   {
+    "kind": "email",
+    "fire_mid": 0.1712962958133883,
+    "identical": true,
+    "nx_off": "The final version of the document should be sent to the client by **Friday noon**. \n",
+    "nx_on": "The final version of the document should be sent to the client by **Friday noon**. \n"
+   },
+   {
+    "kind": "news",
+    "fire_mid": 0.06410256586968899,
+    "identical": true,
+    "nx_off": "The reservoirs are at **82%** of capacity. \n",
+    "nx_on": "The reservoirs are at **82%** of capacity. \n"
+   },
+   {
+    "kind": "code",
+    "fire_mid": 0.12345679197460413,
+    "identical": true,
+    "nx_off": "The document states that if `window` is zero, it will raise a `ValueError` with the message \"window must be positive\". \n",
+    "nx_on": "The document states that if `window` is zero, it will raise a `ValueError` with the message \"window must be positive\". \n"
+   },
+   {
+    "kind": "howto",
+    "fire_mid": 0.10541310989194447,
+    "identical": true,
+    "nx_off": "You type the new password **twice**. \n",
+    "nx_on": "You type the new password **twice**. \n"
+   },
+   {
+    "kind": "meeting_notes",
+    "fire_mid": 0.06666666600439283,
+    "identical": true,
+    "nx_off": "Chloe is preparing the investor update. \n",
+    "nx_on": "Chloe is preparing the investor update. \n"
+   },
+   {
+    "kind": "review",
+    "fire_mid": 0.12403101142909792,
+    "identical": false,
+    "nx_off": "The reviewer dislikes the blender being **louder** than their old one and the **lid being a bit hard to clean**. \n",
+    "nx_on": "The reviewer dislikes the blender being **louder than their old one** and the **lid being a bit hard to clean**. \n"
+   },
+   {
+    "kind": "table",
+    "fire_mid": 0.04126984274221791,
+    "identical": false,
+    "nx_off": "The city founded first is **Brisk**, founded in 1790. \n",
+    "nx_on": "The city founded first is **Arlen**, founded in **1821**. \n"
+   },
+   {
+    "kind": "recipe",
+    "fire_mid": 0.023504274172915354,
+    "identical": true,
+    "nx_off": "The rice is cooked for **fifteen minutes**. \n",
+    "nx_on": "The rice is cooked for **fifteen minutes**. \n"
+   },
+   {
+    "kind": "policy",
+    "fire_mid": 0.045893719833758145,
+    "identical": true,
+    "nx_off": "The document states that equipment for home offices is reimbursed up to **$300** per year. \n",
+    "nx_on": "The document states that equipment for home offices is reimbursed up to **$300** per year. \n"
+   },
+   {
+    "kind": "readme",
+    "fire_mid": 0.10052910322944324,
+    "identical": true,
+    "nx_off": "Python 3.10 or newer is required. \n",
+    "nx_on": "Python 3.10 or newer is required. \n"
+   }
+  ]
+ }
+]

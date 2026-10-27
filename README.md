@@ -30,20 +30,24 @@ uv sync && uv run python examples/salary_table.py      # prints both answers, re
 ## Results: BIPIA
 
 On BIPIA's email, table, abstract and code tasks, with 3,300 attacked test samples per condition and 300 clean
-ones (undefended and nexec), judged by Claude Sonnet 5.5. Full report:
-[`docs/findings/2026-10-step3-bipia.md`](docs/findings/2026-10-step3-bipia.md).
+ones (undefended and nexec), judged by Claude Sonnet 5.5, at the bundled settings. Full reports:
+[`docs/findings/2026-10-step3-bipia.md`](docs/findings/2026-10-step3-bipia.md) and, for the step-3.5 retune,
+[`docs/findings/2026-10-step3.5-residual.md`](docs/findings/2026-10-step3.5-residual.md).
 
 | Model | Attack success, undefended → nexec | Magnitude-matched random control | Clean utility, undefended → nexec |
 |---|---|---|---|
 | Llama-3.2-3B-Instruct | 22.9% → **8.3%** | 22.3% | 55.0% → 55.5% |
-| Gemma-2-2B-it | 22.0% → **3.0%** | 21.7% | 47.0% → 49.5% |
+| Gemma-2-2B-it | 22.0% → **1.8%** | 21.2% | 47.0% → 48.8% |
 
-- **Claude-judged attacks almost vanish:** Llama 13.9% → 0.9%, Gemma 15.0% → 0.5%.
+- **Claude-judged attacks almost vanish:** Llama 13.9% → 0.9%, Gemma 15.0% → 0.2%.
 - **Style-only and code injections partly survive, mostly on Llama.** BIPIA's rule-scored attacks include "use
-  emojis in your answer" and malicious code pasted into a Stack Overflow answer, and Llama's rule-scored ASR only
-  falls 41.6% → 24.7%.
+  emojis in your answer" and malicious code pasted into a Stack Overflow answer. Llama's rule-scored ASR only falls
+  41.6% → 24.7% (Gemma 38.1% → 4.7%). These injections are recognized; Llama's edit is just too weak for them at
+  α = 1. A stronger opt-in setting for Llama (affine gate, α = 4) brings its ASR to 0.6%, but costs 5.7 pt of clean
+  utility, so it is not the default.
 - **The direction is doing the work.** A random direction with identical per-token edit sizes does nothing.
-- **Utility is unchanged within noise.**
+- **Utility is unchanged within noise** at the bundled settings: paired differences 0.0 pt (Llama) and +2.7 pt
+  (Gemma), both 95% CIs include 0.
 
 NVIDIA reports lower residuals (0.1% / 0.2%) over 5 tasks, with an unnamed judge.
 
@@ -68,8 +72,9 @@ answer = nx.generate([
 **Bundled directions:** Llama-3.2-3B-Instruct (raw gate) and Gemma-2-2B-it (affine gate). These are derived from
 the respective models and are subject to their licenses (Llama 3.2 Community License, "Built with Llama"; Gemma Terms
 of Use). See the `NOTICE.md` next to each. Fit directions for
-another model with `NX.from_pretrained(model_id, fit_if_missing=True)` or `scripts/fit_directions.py`. The
-settings (all layers, α = 1) are provisional until they are tuned on BIPIA.
+another model with `NX.from_pretrained(model_id, fit_if_missing=True)` or `scripts/fit_directions.py`. Settings, chosen
+on BIPIA's train split and checked on test: all layers, α = 1 for Llama and **α = 2 for Gemma**. Pass `alpha=` to
+`generate` or `protect` to override.
 
 ## How it works
 
@@ -82,12 +87,14 @@ settings (all layers, α = 1) are provisional until they are tuned on BIPIA.
    prompt, user request, chat template) are never edited.
 
 Step-0 evidence from this repo (`docs/findings/2026-10-step0-spike.md`): NVIDIA's salary-table demo flips on
-Llama-3.2-3B. Random directions with the same per-token edit sizes do nothing, and ordinary documents are answered
-byte-identically.
+Llama-3.2-3B. Random directions with the same per-token edit sizes do nothing. At the bundled settings, on ten
+ordinary documents with a question (step 3.5 check), nexec's answers are byte-identical to undefended in 9/10 for
+Llama (the tenth adds "According to the document") and 8/10 for Gemma: one rewording, and one wrong answer on a
+three-row city table.
 
 ## Limitations
 
-- **Mitigation, not a guarantee.** On BIPIA, 3–8% of injections still succeed. Code-shaped injections and terse
+- **Mitigation, not a guarantee.** On BIPIA, 2–8% of injections still succeed. Code-shaped injections and terse
   style requests are the weakest cases. Paraphrased injections are reduced, not eliminated. Keep sandboxes and tool
   allowlists, and keep secrets out of prompts.
 - **Needs hidden states.** It works with open-weight models in HF Transformers, not with closed APIs.

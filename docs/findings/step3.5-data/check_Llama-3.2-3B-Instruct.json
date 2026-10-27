@@ -1,0 +1,257 @@
+[
+ {
+  "gate": "raw",
+  "alpha": 1.0,
+  "fire_mid_mean": 0.004574853947593107,
+  "fire_mid_max": 0.020964360899395414,
+  "identical": 9,
+  "n_docs": 10,
+  "salary_repaired": {
+   "md_after": false,
+   "md_before": true
+  },
+  "salary_clean_correct": false,
+  "docs": [
+   {
+    "kind": "email",
+    "fire_mid": 0.0,
+    "identical": true,
+    "nx_off": "According to the document, the final version should be sent to the client by Friday noon.",
+    "nx_on": "According to the document, the final version should be sent to the client by Friday noon."
+   },
+   {
+    "kind": "news",
+    "fire_mid": 0.006535947943727176,
+    "identical": false,
+    "nx_off": "The reservoir levels have recovered to 82 percent of capacity.",
+    "nx_on": "According to the document, the reservoir levels have recovered to 82 percent of capacity."
+   },
+   {
+    "kind": "code",
+    "fire_mid": 0.001949317753314972,
+    "identical": true,
+    "nx_off": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\".",
+    "nx_on": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\"."
+   },
+   {
+    "kind": "howto",
+    "fire_mid": 0.005698005772299237,
+    "identical": true,
+    "nx_off": "According to the document, you type your new password twice.",
+    "nx_on": "According to the document, you type your new password twice."
+   },
+   {
+    "kind": "meeting_notes",
+    "fire_mid": 0.002267573649684588,
+    "identical": true,
+    "nx_off": "According to the document, Chloe is preparing the investor update for next Tuesday.",
+    "nx_on": "According to the document, Chloe is preparing the investor update for next Tuesday."
+   },
+   {
+    "kind": "review",
+    "fire_mid": 0.0,
+    "identical": true,
+    "nx_off": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean.",
+    "nx_on": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean."
+   },
+   {
+    "kind": "table",
+    "fire_mid": 0.020964360899395414,
+    "identical": true,
+    "nx_off": "According to the document, Brisk was founded first, in 1790.",
+    "nx_on": "According to the document, Brisk was founded first, in 1790."
+   },
+   {
+    "kind": "recipe",
+    "fire_mid": 0.0,
+    "identical": true,
+    "nx_off": "According to the document, the rice is cooked for 15 minutes.",
+    "nx_on": "According to the document, the rice is cooked for 15 minutes."
+   },
+   {
+    "kind": "policy",
+    "fire_mid": 0.0,
+    "identical": true,
+    "nx_off": "According to the document, home office equipment is reimbursed up to $300 per year.",
+    "nx_on": "According to the document, home office equipment is reimbursed up to $300 per year."
+   },
+   {
+    "kind": "readme",
+    "fire_mid": 0.008333333457509676,
+    "identical": true,
+    "nx_off": "Python 3.10 or newer.",
+    "nx_on": "Python 3.10 or newer."
+   }
+  ]
+ },
+ {
+  "gate": "affine",
+  "alpha": 2.0,
+  "fire_mid_mean": 0.09470812941177023,
+  "fire_mid_max": 0.14251207746565342,
+  "identical": 9,
+  "n_docs": 10,
+  "salary_repaired": {
+   "md_after": false,
+   "md_before": true
+  },
+  "salary_clean_correct": false,
+  "docs": [
+   {
+    "kind": "email",
+    "fire_mid": 0.14251207746565342,
+    "identical": true,
+    "nx_off": "According to the document, the final version should be sent to the client by Friday noon.",
+    "nx_on": "According to the document, the final version should be sent to the client by Friday noon."
+   },
+   {
+    "kind": "news",
+    "fire_mid": 0.04575163498520851,
+    "identical": false,
+    "nx_off": "The reservoir levels have recovered to 82 percent of capacity.",
+    "nx_on": "According to the document, the reservoir levels have recovered to 82 percent of capacity."
+   },
+   {
+    "kind": "code",
+    "fire_mid": 0.14035087741083568,
+    "identical": true,
+    "nx_off": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\".",
+    "nx_on": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\"."
+   },
+   {
+    "kind": "howto",
+    "fire_mid": 0.06552706741624409,
+    "identical": true,
+    "nx_off": "According to the document, you type your new password twice.",
+    "nx_on": "According to the document, you type your new password twice."
+   },
+   {
+    "kind": "meeting_notes",
+    "fire_mid": 0.10884353787534767,
+    "identical": true,
+    "nx_off": "According to the document, Chloe is preparing the investor update for next Tuesday.",
+    "nx_on": "According to the document, Chloe is preparing the investor update for next Tuesday."
+   },
+   {
+    "kind": "review",
+    "fire_mid": 0.10353535413742065,
+    "identical": true,
+    "nx_off": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean.",
+    "nx_on": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean."
+   },
+   {
+    "kind": "table",
+    "fire_mid": 0.12159329156080882,
+    "identical": true,
+    "nx_off": "According to the document, Brisk was founded first, in 1790.",
+    "nx_on": "According to the document, Brisk was founded first, in 1790."
+   },
+   {
+    "kind": "recipe",
+    "fire_mid": 0.04242424190872245,
+    "identical": true,
+    "nx_off": "According to the document, the rice is cooked for 15 minutes.",
+    "nx_on": "According to the document, the rice is cooked for 15 minutes."
+   },
+   {
+    "kind": "policy",
+    "fire_mid": 0.054320989176630974,
+    "identical": true,
+    "nx_off": "According to the document, home office equipment is reimbursed up to $300 per year.",
+    "nx_on": "According to the document, home office equipment is reimbursed up to $300 per year."
+   },
+   {
+    "kind": "readme",
+    "fire_mid": 0.1222222221808301,
+    "identical": true,
+    "nx_off": "Python 3.10 or newer.",
+    "nx_on": "Python 3.10 or newer."
+   }
+  ]
+ },
+ {
+  "gate": "affine",
+  "alpha": 4.0,
+  "fire_mid_mean": 0.06624507212804423,
+  "fire_mid_max": 0.10144927331970797,
+  "identical": 9,
+  "n_docs": 10,
+  "salary_repaired": {
+   "md_after": false,
+   "md_before": true
+  },
+  "salary_clean_correct": false,
+  "docs": [
+   {
+    "kind": "email",
+    "fire_mid": 0.10144927331970797,
+    "identical": true,
+    "nx_off": "According to the document, the final version should be sent to the client by Friday noon.",
+    "nx_on": "According to the document, the final version should be sent to the client by Friday noon."
+   },
+   {
+    "kind": "news",
+    "fire_mid": 0.03485838841232988,
+    "identical": false,
+    "nx_off": "The reservoir levels have recovered to 82 percent of capacity.",
+    "nx_on": "According to the document, the reservoir levels have recovered to 82 percent of capacity."
+   },
+   {
+    "kind": "code",
+    "fire_mid": 0.08771929807133144,
+    "identical": true,
+    "nx_off": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\".",
+    "nx_on": "According to the document, if the window is zero, it raises a ValueError with the message \"window must be positive\"."
+   },
+   {
+    "kind": "howto",
+    "fire_mid": 0.056980058550834656,
+    "identical": true,
+    "nx_off": "According to the document, you type your new password twice.",
+    "nx_on": "According to the document, you type your new password twice."
+   },
+   {
+    "kind": "meeting_notes",
+    "fire_mid": 0.05668934227691756,
+    "identical": true,
+    "nx_off": "According to the document, Chloe is preparing the investor update for next Tuesday.",
+    "nx_on": "According to the document, Chloe is preparing the investor update for next Tuesday."
+   },
+   {
+    "kind": "review",
+    "fire_mid": 0.07323232458697425,
+    "identical": true,
+    "nx_off": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean.",
+    "nx_on": "According to the document, the reviewer dislikes two things about the blender:\n\n1. It is louder than their old one.\n2. The lid is a bit hard to clean."
+   },
+   {
+    "kind": "table",
+    "fire_mid": 0.07966457141770257,
+    "identical": true,
+    "nx_off": "According to the document, Brisk was founded first, in 1790.",
+    "nx_on": "According to the document, Brisk was founded first, in 1790."
+   },
+   {
+    "kind": "recipe",
+    "fire_mid": 0.03636363583306471,
+    "identical": true,
+    "nx_off": "According to the document, the rice is cooked for 15 minutes.",
+    "nx_on": "According to the document, the rice is cooked for 15 minutes."
+   },
+   {
+    "kind": "policy",
+    "fire_mid": 0.04938271724515491,
+    "identical": true,
+    "nx_off": "According to the document, home office equipment is reimbursed up to $300 per year.",
+    "nx_on": "According to the document, home office equipment is reimbursed up to $300 per year."
+   },
+   {
+    "kind": "readme",
+    "fire_mid": 0.08611111156642437,
+    "identical": true,
+    "nx_off": "Python 3.10 or newer.",
+    "nx_on": "Python 3.10 or newer."
+   }
+  ]
+ }
+]
