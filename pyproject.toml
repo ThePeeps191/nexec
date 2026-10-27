@@ -7,7 +7,7 @@ name = "nexec"
 dynamic = ["version"]
 description = "No-execute bits for LLM tokens: provenance-gated instruction-direction ablation"
 readme = "README.md"
-license = "MIT"
+license = "MIT AND LicenseRef-Llama-3.2-Community-License AND LicenseRef-Gemma-Terms-of-Use"
 license-files = ["LICENSE", "src/nexec/directions/*/NOTICE.md", "src/nexec/directions/*/LICENSE.txt", "src/nexec/directions/*/USE_POLICY.md", "src/nexec/directions/*/GEMMA_*.txt"]
 requires-python = ">=3.10"
 authors = [{ name = "Danny Wang" }]
@@ -16,7 +16,6 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
@@ -28,10 +27,9 @@ classifiers = [
 ]
 dependencies = [
     "torch>=2.13",
-    "transformers>=5.20,<5.21",
+    "transformers>=5.20,<6",
     "safetensors",
     "huggingface_hub",
-    "numpy",
 ]
 
 [project.urls]
@@ -68,7 +66,7 @@ line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP", "B"]
-ignore = ["E741"]
+ignore = ["E741"]  # `l` is the layer index, matching the paper's notation
 
 [tool.ruff.lint.per-file-ignores]
-"scripts/corpus_v1_data.py" = ["E501"]  # data: one example per line  # `l` is the layer index, matching the paper's notation
+"scripts/corpus_v1_data.py" = ["E501"]  # data: one example per line

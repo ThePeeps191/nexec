@@ -10,6 +10,7 @@ stops obeying it.
 from nexec import NX, untrusted
 
 nx = NX.from_pretrained("meta-llama/Llama-3.2-3B-Instruct")      # model + bundled directions
+# table: any text from outside (a tool result, a retrieved page) that may carry an injected instruction
 nx.generate([{"role": "user", "content": [untrusted(table), "\n\nWhat is the average salary in Marketing?"]}])
 ```
 
@@ -18,7 +19,8 @@ nx.generate([{"role": "user", "content": [untrusted(table), "\n\nWhat is the ave
 > - It acts only on text you mark as untrusted; it does not detect injections.
 > - It needs open weights in HF Transformers.
 >
-> Keep sandboxes, tool allowlists and least privilege. See [Limitations](#limitations).
+> Keep sandboxes, tool allowlists and least privilege. See
+> [Limitations](https://github.com/ThePeeps191/nexec#limitations).
 
 **Credit.** nexec reimplements NVIDIA's **NXDirection** (Tamás Vörös, NVIDIA AI Security, Oct 2026,
 [research page](https://research.nvidia.com/ai-security/nxdirection-no-execute-along-instruction-direction)). The
@@ -43,7 +45,7 @@ pip install nexec            # or: uv add nexec
 pip install "nexec[viz]"     # + matplotlib, for PNG heatmaps
 ```
 
-Python ≥ 3.10, PyTorch, Transformers 5.20. The bundled models are gated on the Hugging Face Hub: accept the Llama 3.2
+Python ≥ 3.10, PyTorch, Transformers 5.x (results measured with 5.20). The bundled models are gated on the Hugging Face Hub: accept the Llama 3.2
 or Gemma 2 license there and log in (`hf auth login`) before the first download. The device is picked
 automatically (Apple MPS, CUDA or CPU). All results here were measured on Apple MPS.
 
@@ -97,6 +99,7 @@ Every generation and verdict is committed under `docs/findings/`.
 from nexec import NX, untrusted
 
 nx = NX.from_pretrained("google/gemma-2-2b-it")
+table = "| Name | Dept | Salary |\n|---|---|---|\n| Bob | Mkt | 82k |\n| Eve | Mkt | 88k |"   # untrusted text
 out = nx.generate(
     [
         {"role": "system", "content": "Answer the question using only the table data."},
@@ -118,7 +121,8 @@ out = nx.generate(
 - They are derived from those models and ship under their terms: the Llama 3.2 Community License ("Built with Llama")
   and the Gemma Terms of Use. Copies sit next to each direction file in `nexec/directions/`.
 - For any other Transformers decoder, `NX.from_pretrained(model_id, fit_if_missing=True)` fits directions from the
-  packaged corpus and caches them in `~/.cache/nexec`. That takes about 20 s for a 3B model on an M-series Mac.
+  packaged corpus and caches them in `~/.cache/nexec`. That took 21 s for Llama-3.2-3B, model load included,
+  on the M-series Mac used for the results here.
   `scripts/fit_directions.py` does the same.
 - Fitted directions are untested on BIPIA for models other than these two.
 

@@ -49,7 +49,7 @@ def main() -> Path:
     conv = salary_conversation("md_before")
     gen = dict(max_new_tokens=160)
     answers = {"Undefended answer:": nx.generate(conv, defend=False, **gen)[0],
-               "With nexec (table marked untrusted):": nx.generate(conv, **gen)[0]}
+               "With NXDirection (nexec, table marked untrusted):": nx.generate(conv, **gen)[0]}
     scores = token_scores(nx, conv, title="Salary table: Llama-3.2-3B-Instruct")
     font = ImageFont.truetype(font_manager.findfont("DejaVu Sans"), FONT_PX)
     cap = _caption(answers, font)

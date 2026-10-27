@@ -1,3 +1,17 @@
+This repository and the nexec package are MIT-licensed (below), with one exception: the bundled direction files
+under src/nexec/directions/ (installed as nexec/directions/) are NOT covered by the MIT license. They are derived
+from Llama 3.2 and Gemma 2 and are governed by those models' terms, a copy of which ships in each directory:
+
+- src/nexec/directions/meta-llama--Llama-3.2-3B-Instruct/: Llama 3.2 Community License (LICENSE.txt) and Meta's
+  Acceptable Use Policy (USE_POLICY.md). Built with Llama.
+- src/nexec/directions/google--gemma-2-2b-it/: Gemma Terms of Use (GEMMA_TERMS_OF_USE.txt), including the use
+  restrictions in its Section 3.2 and the Gemma Prohibited Use Policy (GEMMA_PROHIBITED_USE_POLICY.txt), which apply
+  to anyone who uses or redistributes those files.
+
+See the NOTICE.md in each directory.
+
+---
+
 MIT License
 
 Copyright (c) 2026 Danny Wang

@@ -70,8 +70,8 @@ class NX:
                 directions.save(user_cache_dir(model_id))
             else:
                 raise FileNotFoundError(
-                    f"no nexec directions for {model_id}. Pass fit_if_missing=True, or run "
-                    f"`uv run python scripts/fit_directions.py --model {model_id}`.")
+                    f"no nexec directions for {model_id}. Pass fit_if_missing=True to fit and cache them (or, "
+                    f"from a clone of the repo, run `uv run python scripts/fit_directions.py --model {model_id}`).")
         return cls(model, tokenizer, directions, strict=strict)
 
     def encode(self, conversations, *, template_kwargs: dict | None = None) -> Encoded:

@@ -16,16 +16,18 @@ jobs:
       fail-fast: false
       matrix:
         python: ["3.10", "3.12"]
-    env:
-      # optional: with a token that has accepted the Llama-3.2 and Gemma-2 licenses, the gated-tokenizer tests run;
-      # without it they are skipped. Model-weight tests (-m slow) never run in CI.
-      HF_TOKEN: ${{ secrets.HF_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262  # v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@d0cc045d04ccac9d8b7881df0226f9e82c39688e  # v6
         with:
           enable-cache: true
       - run: uv sync --locked --python ${{ matrix.python }}
       - run: uv run ruff check .
       - run: uv run pytest -q -rs
+        env:
+          # optional: with a token that has accepted the Llama-3.2 and Gemma-2 licenses, the gated-tokenizer tests
+          # run; without it they are skipped. Model-weight tests (-m slow) never run in CI.
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
       - run: uv build

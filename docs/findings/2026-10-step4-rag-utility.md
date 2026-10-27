@@ -18,8 +18,17 @@ as "Lady Gaga." → "Lady Gaga sang the national anthem." Judge spend: $0.09.
 This complements the BIPIA clean-utility numbers (step 3), which were flat within noise, and the step-3.5 check on 10
 natural documents. It covers short extractive QA only: not long-form summarization, multi-document RAG or tool output.
 
-SQuAD v1.1 is by Rajpurkar et al. (2016) and licensed CC BY-SA 4.0. The model answers committed here quote short
-spans of it.
+**Absolute accuracy is understated.** The judge's reply is capped at 16 tokens (the step-3 setting). Some replies
+explain before answering and get cut off before a YES or NO. Those parse as "unknown" and count as incorrect, as
+pre-registered: 21 of 400 Llama verdicts and 10 of 400 Gemma verdicts. This lowers both conditions equally. The paired
+differences and the unknown-dropped sensitivity analysis are unaffected. The gold-match metric is plain substring
+containment, so a reference "1" also matches "1990". It is secondary, and next time it should match on word
+boundaries.
+
+**What is committed.** SQuAD v1.1 is by Rajpurkar et al. (2016) and licensed CC BY-SA 4.0. The protocol's "no passage
+or question text is committed" holds for the input fields, but two kinds of output quote SQuAD:
+- the committed model answers quote short spans of the passages;
+- the judge replies, cut to 80 characters, sometimes quote a reference answer or paraphrase the question.
 
 Spec §6.3: "A short in-domain clean RAG QA set (~100 items, e.g. SQuAD-style passages marked untrusted). It catches
 the 'fine on BIPIA, broken on real RAG' failure. Release-blocking only if the accuracy drop exceeds 5 points."
