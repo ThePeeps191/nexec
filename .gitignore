@@ -3,3 +3,4 @@ __pycache__/
 .superpowers/
 evals/bipia/cache/
 evals/rag/cache/
+dist/
