@@ -124,6 +124,10 @@ out = nx.generate(
   packaged corpus and caches them in `~/.cache/nexec`. That took 21 s for Llama-3.2-3B, model load included,
   on the M-series Mac used for the results here.
   `scripts/fit_directions.py` does the same.
+- The same files are on the Hugging Face Hub:
+  [Llama-3.2-3B-Instruct-nexec-directions](https://huggingface.co/dannywang930/Llama-3.2-3B-Instruct-nexec-directions)
+  and [gemma-2-2b-it-nexec-directions](https://huggingface.co/dannywang930/gemma-2-2b-it-nexec-directions). Load them
+  with `NX.from_pretrained(model_id, directions="hf://dannywang930/<repo>")`.
 - Fitted directions are untested on BIPIA for models other than these two.
 
 ## How it works
