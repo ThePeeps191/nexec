@@ -1,0 +1,117 @@
+{
+ "judge_spend_usd": 0.09229100000000005,
+ "Llama-3.2-3B-Instruct": {
+  "accuracy": {
+   "undefended": {
+    "k": 182,
+    "n": 200,
+    "rate": 0.91
+   },
+   "nx": {
+    "k": 182,
+    "n": 200,
+    "rate": 0.91
+   }
+  },
+  "gold_match": {
+   "undefended": {
+    "k": 176,
+    "n": 200,
+    "rate": 0.88
+   },
+   "nx": {
+    "k": 177,
+    "n": 200,
+    "rate": 0.885
+   }
+  },
+  "paired_nx_minus_undefended": {
+   "n": 200,
+   "diff": 0.0,
+   "ci": [
+    -0.015,
+    0.015
+   ],
+   "gained": 1,
+   "lost": 1
+  },
+  "paired_unknown_dropped": {
+   "n": 187,
+   "diff": 0.0,
+   "ci": [
+    0.0,
+    0.0
+   ],
+   "gained": 0,
+   "lost": 0
+  },
+  "paired_gold_match": {
+   "n": 200,
+   "diff": 0.005,
+   "ci": [
+    0.0,
+    0.015
+   ],
+   "gained": 1,
+   "lost": 0
+  },
+  "blocking": false
+ },
+ "gemma-2-2b-it": {
+  "accuracy": {
+   "undefended": {
+    "k": 188,
+    "n": 200,
+    "rate": 0.94
+   },
+   "nx": {
+    "k": 189,
+    "n": 200,
+    "rate": 0.945
+   }
+  },
+  "gold_match": {
+   "undefended": {
+    "k": 169,
+    "n": 200,
+    "rate": 0.845
+   },
+   "nx": {
+    "k": 172,
+    "n": 200,
+    "rate": 0.86
+   }
+  },
+  "paired_nx_minus_undefended": {
+   "n": 200,
+   "diff": 0.005,
+   "ci": [
+    0.0,
+    0.015
+   ],
+   "gained": 1,
+   "lost": 0
+  },
+  "paired_unknown_dropped": {
+   "n": 195,
+   "diff": 0.005128205128205128,
+   "ci": [
+    0.0,
+    0.015384615384615385
+   ],
+   "gained": 1,
+   "lost": 0
+  },
+  "paired_gold_match": {
+   "n": 200,
+   "diff": 0.015,
+   "ci": [
+    0.0,
+    0.035
+   ],
+   "gained": 3,
+   "lost": 0
+  },
+  "blocking": false
+ }
+}
