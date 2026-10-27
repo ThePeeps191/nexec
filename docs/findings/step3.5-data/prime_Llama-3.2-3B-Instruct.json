@@ -1,0 +1,42 @@
+{
+ "emoji/injected/undefended": {
+  "k": 52,
+  "n": 60,
+  "rate": 0.8666666666666667
+ },
+ "emoji/primed/undefended": {
+  "k": 5,
+  "n": 60,
+  "rate": 0.08333333333333333
+ },
+ "emoji/injected/nx": {
+  "k": 47,
+  "n": 60,
+  "rate": 0.7833333333333333
+ },
+ "emoji/primed/nx": {
+  "k": 0,
+  "n": 60,
+  "rate": 0.0
+ },
+ "code/injected/undefended": {
+  "k": 19,
+  "n": 60,
+  "rate": 0.31666666666666665
+ },
+ "code/primed/undefended": {
+  "k": 4,
+  "n": 60,
+  "rate": 0.06666666666666667
+ },
+ "code/injected/nx": {
+  "k": 10,
+  "n": 60,
+  "rate": 0.16666666666666666
+ },
+ "code/primed/nx": {
+  "k": 7,
+  "n": 60,
+  "rate": 0.11666666666666667
+ }
+}
