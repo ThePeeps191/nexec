@@ -8,7 +8,7 @@ dynamic = ["version"]
 description = "No-execute bits for LLM tokens: provenance-gated instruction-direction ablation"
 readme = "README.md"
 license = "MIT"
-license-files = ["LICENSE", "src/nexec/directions/*/NOTICE.md"]
+license-files = ["LICENSE", "src/nexec/directions/*/NOTICE.md", "src/nexec/directions/*/LICENSE.txt", "src/nexec/directions/*/USE_POLICY.md", "src/nexec/directions/*/GEMMA_*.txt"]
 requires-python = ">=3.10"
 authors = [{ name = "Danny Wang" }]
 keywords = ["llm", "prompt-injection", "security", "activation-steering", "interpretability", "transformers"]
